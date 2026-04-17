@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ locale }}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f2f2f7">
-  <title>VMAnalytic App</title>
+  <title>{{ t('page_title') }}</title>
   <style>
     /* Light UI — aligned with Apple Human Interface Guidelines (typography, spacing, system colors) */
     :root {
@@ -269,6 +269,70 @@
     }
     .stat-row span { color: var(--text-secondary); }
     .stat-row strong { color: var(--text-primary); font-weight: 600; }
+
+    /* Project plan proposal tab */
+    .plan-intro {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0 0 1.25rem;
+    }
+    .plan-table-wrap { overflow-x: auto; margin: 0.75rem 0 1.25rem; }
+    table.plan-phases {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    table.plan-phases th,
+    table.plan-phases td {
+      padding: 0.65rem 0.75rem;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--separator);
+    }
+    table.plan-phases th {
+      background: var(--fill-quaternary);
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+    table.plan-phases tr:last-child td { border-bottom: none; }
+    table.plan-phases td:first-child { font-weight: 600; white-space: nowrap; color: var(--text-primary); }
+    .plan-milestones {
+      margin: 0;
+      padding-left: 1.15rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      line-height: 1.55;
+    }
+    .plan-milestones li { margin-bottom: 0.35rem; }
+    .plan-note {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 122, 255, 0.06);
+      border: 1px solid rgba(0, 122, 255, 0.2);
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .plan-note strong { color: var(--text-primary); }
+    .oic-frame-wrap {
+      margin-top: 0.9rem;
+      border: 1px solid var(--separator);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+    }
+    .oic-frame {
+      width: 100%;
+      min-height: min(980px, 82vh);
+      border: none;
+      display: block;
+      background: #fff;
+    }
 
     /* Risk tab: overall score */
     .risk-hero {
@@ -605,24 +669,150 @@
       margin: 0;
       line-height: 1.45;
     }
+
+    /* Language switcher */
+    .lang-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem 0.65rem;
+      margin-bottom: 1rem;
+      padding: 0.55rem 0.85rem;
+      background: var(--fill-quaternary);
+      border-radius: var(--radius-md);
+      font-size: 0.8125rem;
+    }
+    .lang-bar-label {
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-right: 0.15rem;
+    }
+    a.lang-chip {
+      text-decoration: none;
+      padding: 0.28rem 0.65rem;
+      border-radius: 999px;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      font-weight: 500;
+      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    a.lang-chip:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.65);
+      border-color: var(--border);
+    }
+    a.lang-chip.is-active {
+      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Balloon help (? chip) */
+    .help-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      margin-left: 0.3rem;
+    }
+    .h1-row, .label-row {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.15rem;
+    }
+    .help-btn {
+      width: 1.2rem;
+      height: 1.2rem;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      background: var(--fill-quaternary);
+      color: var(--accent);
+      font-size: 0.65rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: help;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px var(--border);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .help-btn:hover, .help-btn:focus-visible {
+      background: var(--accent);
+      color: #fff;
+      outline: none;
+    }
+    .help-balloon {
+      display: none;
+      position: absolute;
+      z-index: 200;
+      left: 50%;
+      transform: translateX(-50%);
+      top: calc(100% + 8px);
+      min-width: 220px;
+      max-width: min(340px, 92vw);
+      padding: 0.65rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 400;
+      line-height: 1.45;
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md);
+      text-align: left;
+    }
+    .help-balloon::before {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border: 6px solid transparent;
+      border-bottom-color: var(--border);
+    }
+    .help-wrap.is-open .help-balloon,
+    .help-wrap:hover .help-balloon {
+      display: block;
+    }
+    @media (hover: none) {
+      .help-wrap:hover .help-balloon { display: none; }
+      .help-wrap.is-open .help-balloon { display: block; }
+    }
   </style>
 </head>
-<body data-initial-tab="{% if result is not none %}overview{% else %}import{% endif %}">
+<body data-initial-tab="projectplan" data-locale="{{ locale }}">
+  <script type="application/json" id="i18n-bootstrap">{{ {"locale": locale, "strings": i18n_js, "help": i18n_help} | tojson }}</script>
   <div class="wrap">
+    <div class="lang-bar" role="navigation" aria-label="{{ t('lang_bar_label') }}">
+      <span class="lang-bar-label">{{ t('lang_bar_label') }}</span>
+      {% for code in ['en', 'de', 'fr', 'es'] %}
+        <a href="{{ url_for('set_lang', locale=code, next=request.full_path) }}" class="lang-chip{% if locale == code %} is-active{% endif %}" hreflang="{{ code }}">{{ lang_native[code] }}</a>
+      {% endfor %}
+      <span class="help-wrap" data-help-wrap>
+        <button type="button" class="help-btn" data-help="nav_tabs" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+        <span class="help-balloon" role="tooltip">{{ i18n_help['nav_tabs'] }}</span>
+      </span>
+    </div>
+
     <header class="app-header">
       <img
         class="app-logo"
         src="{{ url_for('static', filename='vmanalytic-logo.png') }}"
         width="56"
         height="56"
-        alt="VMAnalytic"
+        alt="{{ t('meta_app') }}"
       />
       <div class="app-header-main">
-        <h1>VMAnalytic App</h1>
-        <p class="lead">
-          <strong>VMAnalytic</strong> analyzes VMware inventory from RVTools-style data. Import a <strong>RVTools .xlsx</strong>
-          or connect to <strong>vCenter</strong>. Required sheets: <code>vInfo</code>, <code>vHost</code>, <code>vDisk</code>.
-        </p>
+        <div class="h1-row">
+          <h1>{{ t('h1') }}</h1>
+          <span class="help-wrap" data-help-wrap>
+            <button type="button" class="help-btn" data-help="header_lead" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['header_lead'] }}</span>
+          </span>
+        </div>
+        <p class="lead">{{ t('lead') | safe }}</p>
       </div>
     </header>
 
@@ -634,50 +824,64 @@
       {% endif %}
     {% endwith %}
 
-    <nav class="tabs" role="tablist" aria-label="Main">
-      <button type="button" class="tab-btn{% if result is none %} active{% endif %}" role="tab" aria-selected="{% if result is none %}true{% else %}false{% endif %}" data-tab="import" id="tab-btn-import">Import</button>
+    <nav class="tabs" role="tablist" aria-label="{{ t('nav_main_aria') }}">
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="projectplan" id="tab-btn-projectplan" title="{{ t('tab_projectplan_title') }}">{{ t('nav_projectplan') }}</button>
+      <button type="button" class="tab-btn{% if result is none %} active{% endif %}" role="tab" aria-selected="{% if result is none %}true{% else %}false{% endif %}" data-tab="import" id="tab-btn-import">{{ t('nav_import') }}</button>
       <button type="button" class="tab-btn{% if result is not none %} active{% endif %}" role="tab" aria-selected="{% if result is not none %}true{% else %}false{% endif %}" data-tab="overview" id="tab-btn-overview"
-        {% if result is none %}disabled title="Run an analysis first"{% endif %}>Overview</button>
+        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_overview') }}</button>
       <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="risk" id="tab-btn-risk"
-        {% if result is none %}disabled title="Run an analysis first"{% endif %}>Risk analysis</button>
+        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_risk') }}</button>
       <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="duration" id="tab-btn-duration"
-        {% if result is none %}disabled title="Run an analysis first"{% endif %}>Duration estimate</button>
+        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_duration') }}</button>
       <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="graphics" id="tab-btn-graphics"
-        {% if result is none %}disabled title="Run an analysis first"{% endif %}>Graphics</button>
+        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_graphics') }}</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="oic" id="tab-btn-oic">{{ t('nav_oic') }}</button>
     </nav>
 
     <!-- Import -->
     <section class="tab-panel flat-top{% if result is none %} active{% endif %}" data-panel="import" id="panel-import" role="tabpanel" aria-labelledby="tab-btn-import">
       <div class="panel-inner">
-        <h2>Upload RVTools file(s)</h2>
+        <div class="label-row" style="margin-bottom:0.35rem;">
+          <h2 style="margin:0;">{{ t('import_upload_h2') }}</h2>
+          <span class="help-wrap" data-help-wrap>
+            <button type="button" class="help-btn" data-help="import_upload" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['import_upload'] }}</span>
+          </span>
+        </div>
         <form id="form-upload-import" method="post" enctype="multipart/form-data">
           <input type="hidden" name="import_mode" value="upload">
-          <label for="rvtools_files">RVTools exports — one or more .xlsx files</label>
+          <label for="rvtools_files">{{ t('label_rvtools_files') }}</label>
           <input type="file" id="rvtools_files" name="rvtools_files" accept=".xlsx,.xls" multiple>
-          <p class="hint">Select <strong>multiple files</strong> in the dialog (Ctrl+Click / Cmd+Click). Each file is treated as one vCenter inventory; file names (without extension) define the vCenter key (lowercase).</p>
-          <button type="submit">Run analysis from upload</button>
+          <p class="hint">{{ t('hint_rvtools_files') | safe }}</p>
+          <button type="submit">{{ t('btn_run_upload') }}</button>
         </form>
       </div>
       <div class="panel-inner" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border);">
-        <h2>Connect to vCenter (API)</h2>
+        <div class="label-row" style="margin-bottom:0.35rem;">
+          <h2 style="margin:0;">{{ t('import_vcenter_h2') }}</h2>
+          <span class="help-wrap" data-help-wrap>
+            <button type="button" class="help-btn" data-help="import_vcenter" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['import_vcenter'] }}</span>
+          </span>
+        </div>
         <form id="form-vcenter-import" method="post">
           <input type="hidden" name="import_mode" value="vcenter">
-          <label for="vc_host">vCenter host / FQDN</label>
-          <input type="text" id="vc_host" name="vc_host" placeholder="vcenter.example.com" autocomplete="off">
-          <label for="vc_user" style="margin-top:0.75rem;">Username</label>
+          <label for="vc_host">{{ t('label_vc_host') }}</label>
+          <input type="text" id="vc_host" name="vc_host" placeholder="{{ t('ph_vc_host') }}" autocomplete="off">
+          <label for="vc_user" style="margin-top:0.75rem;">{{ t('label_vc_user') }}</label>
           <input type="text" id="vc_user" name="vc_user" placeholder="administrator@vsphere.local" autocomplete="username">
-          <label for="vc_password" style="margin-top:0.75rem;">Password</label>
+          <label for="vc_password" style="margin-top:0.75rem;">{{ t('label_vc_password') }}</label>
           <input type="password" id="vc_password" name="vc_password" autocomplete="current-password">
-          <label for="vc_port" style="margin-top:0.75rem;">Port</label>
+          <label for="vc_port" style="margin-top:0.75rem;">{{ t('label_vc_port') }}</label>
           <input type="number" id="vc_port" name="vc_port" value="443" min="1" max="65535">
-          <label for="vc_label" style="margin-top:0.75rem;">Label (filename)</label>
-          <input type="text" id="vc_label" name="vc_label" value="vcenter" placeholder="lowercase identifier">
+          <label for="vc_label" style="margin-top:0.75rem;">{{ t('label_vc_label') }}</label>
+          <input type="text" id="vc_label" name="vc_label" value="vcenter" placeholder="{{ t('ph_vc_label') }}">
           <div class="check">
             <input type="checkbox" id="vc_ssl_skip" name="vc_ssl_skip" value="1" checked>
-            <label for="vc_ssl_skip" style="margin:0;">Skip TLS certificate verification</label>
+            <label for="vc_ssl_skip" style="margin:0;">{{ t('label_vc_ssl') }}</label>
           </div>
-          <p class="hint">Uses <code>pyVmomi</code>. Credentials are not stored.</p>
-          <button type="submit">Collect inventory &amp; run analysis</button>
+          <p class="hint">{{ t('hint_vcenter') | safe }}</p>
+          <button type="submit">{{ t('btn_run_vcenter') }}</button>
         </form>
       </div>
     </section>
@@ -686,21 +890,30 @@
     <section class="tab-panel flat-top{% if result is not none %} active{% endif %}" data-panel="overview" id="panel-overview" role="tabpanel" aria-labelledby="tab-btn-overview">
       <div class="panel-inner">
         {% if result is none %}
-          <p class="empty-state">Run an analysis from the <strong>Import</strong> tab to see status and execution log here.</p>
+          <p class="empty-state">{{ t('overview_empty') | safe }}</p>
         {% else %}
+          <div class="label-row" style="margin-bottom:0.5rem;">
+            {% if result.success %}
+            <p class="badge-ok" style="margin:0;">{{ t('badge_ok') }}</p>
+            {% else %}
+            <p class="badge-fail" style="margin:0;">{{ t('badge_fail') }}</p>
+            {% endif %}
+            <span class="help-wrap" data-help-wrap>
+              <button type="button" class="help-btn" data-help="overview_log" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+              <span class="help-balloon" role="tooltip">{{ i18n_help['overview_log'] }}</span>
+            </span>
+          </div>
           {% if result.success %}
-            <p class="badge-ok">Analysis finished successfully.</p>
             <div class="stat-row">
-              <span>Charts: <strong>{{ result.figures|length }}</strong></span>
-              <span>Risk tables: <strong>{{ result.tables|length }}</strong></span>
-              <span>Duration tables: <strong>{% if result.duration %}{{ result.duration.tables|length }}{% else %}0{% endif %}</strong></span>
+              <span>{{ t('stat_charts') }}: <strong>{{ result.figures|length }}</strong></span>
+              <span>{{ t('stat_risk_tables') }}: <strong>{{ result.tables|length }}</strong></span>
+              <span>{{ t('stat_duration_tables') }}: <strong>{% if result.duration %}{{ result.duration.tables|length }}{% else %}0{% endif %}</strong></span>
             </div>
           {% else %}
-            <p class="badge-fail">Analysis failed</p>
             <p class="err">{{ result.error }}</p>
           {% endif %}
-          <h2 style="margin-top:1rem;">Execution log</h2>
-          <pre class="log">{{ result.log or "(no log output)" }}</pre>
+          <h2 style="margin-top:1rem;">{{ t('overview_log_h2') }}</h2>
+          <pre class="log">{{ result.log or t('no_log') }}</pre>
         {% endif %}
       </div>
     </section>
@@ -709,44 +922,56 @@
     <section class="tab-panel flat-top" data-panel="risk" id="panel-risk" role="tabpanel" aria-labelledby="tab-btn-risk">
       <div class="panel-inner">
         {% if result is none %}
-          <p class="empty-state">Run an analysis from the <strong>Import</strong> tab. Pivot tables and migration-related summaries appear here.</p>
+          <p class="empty-state">{{ t('risk_empty') | safe }}</p>
         {% elif not result.tables and not result.risk_summary and not (result.discovered_os and (result.discovered_os['in_scope'] or result.discovered_os['out_of_scope'])) %}
-          <p class="empty-state">No tables were produced (or the run failed before tables were generated).</p>
+          <p class="empty-state">{{ t('risk_no_tables') }}</p>
         {% else %}
           {% if result.risk_summary %}
             <div class="risk-hero" id="risk-hero">
-              <h2>Overall migration risk score</h2>
+              <div class="label-row" style="margin-bottom:0.35rem;">
+                <h2 style="margin:0;">{{ t('risk_hero_h2') }}</h2>
+                <span class="help-wrap" data-help-wrap>
+                  <button type="button" class="help-btn" data-help="risk_score" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+                  <span class="help-balloon" role="tooltip">{{ i18n_help['risk_score'] }}</span>
+                </span>
+              </div>
               <div class="risk-score-row">
                 <span class="risk-score-number sev-{{ result.risk_summary.label|lower }}" id="risk-score-number">{{ result.risk_summary.score }}</span>
-                <span class="risk-score-meta">/ 100 · <strong id="risk-score-label-text">{{ result.risk_summary.label }}</strong> risk</span>
+                <span class="risk-score-meta">{{ t('risk_meta_before') | safe }}<strong id="risk-score-label-text">{{ risk_label_i18n(result.risk_summary.label) }}</strong>{{ t('risk_meta_after') | safe }}</span>
               </div>
               <p class="risk-explainer">
-                Combined from in-scope <strong>VMs</strong>, <strong>hosts</strong>, and <strong>CPU cores</strong> (log-scaled for environment size) plus the <strong>percentage of unsupported guest OS</strong> (same mapping as migration complexity: OS families not matching Red Hat, CentOS, Windows, Ubuntu, SUSE, Oracle, or Microsoft SQL count as unsupported). After adjusting OS scope below, use <strong>Recalculate risk score</strong> to refresh the percentage and score for your view.
+                {{ t('risk_explainer') | safe }}
               </p>
               <div class="risk-mini-stats">
-                <span>VMs: <strong>{{ result.risk_summary.vm_count }}</strong></span>
-                <span>Hosts: <strong>{{ result.risk_summary.host_count }}</strong></span>
-                <span>CPU cores: <strong>{{ result.risk_summary.cpu_cores }}</strong></span>
-                <span>Unsupported guest OS: <strong id="risk-unsupported-pct">{{ result.risk_summary.unsupported_guest_os_pct }}%</strong></span>
+                <span>{{ t('risk_stat_vms') }}: <strong>{{ result.risk_summary.vm_count }}</strong></span>
+                <span>{{ t('risk_stat_hosts') }}: <strong>{{ result.risk_summary.host_count }}</strong></span>
+                <span>{{ t('risk_stat_cores') }}: <strong>{{ result.risk_summary.cpu_cores }}</strong></span>
+                <span>{{ t('risk_stat_unsup') }}: <strong id="risk-unsupported-pct">{{ result.risk_summary.unsupported_guest_os_pct }}%</strong></span>
               </div>
             </div>
             <script type="application/json" id="risk-recalc-inputs">{{ { "vm": result.risk_summary.vm_count, "hosts": result.risk_summary.host_count, "cores": result.risk_summary.cpu_cores } | tojson }}</script>
-            <script type="application/json" id="risk-initial-display">{{ { "score": result.risk_summary.score, "label": result.risk_summary.label, "unsupported_pct": result.risk_summary.unsupported_guest_os_pct } | tojson }}</script>
+            <script type="application/json" id="risk-initial-display">{{ { "score": result.risk_summary.score, "label": result.risk_summary.label, "label_i18n": risk_label_i18n(result.risk_summary.label), "unsupported_pct": result.risk_summary.unsupported_guest_os_pct } | tojson }}</script>
           {% endif %}
           {% if result.discovered_os and (result.discovered_os['in_scope'] or result.discovered_os['out_of_scope']) %}
             <script type="application/json" id="discovered-os-json">{{ result.discovered_os | tojson }}</script>
             <div class="os-discovered-panel" id="discovered-os-panel">
-              <h3 class="os-discovered-heading">Discovered guest operating systems</h3>
-              <span class="os-scope-hint">Cleaned OS name per VM. <strong>In scope</strong>: no exclusion rule applied. <strong>Out of scope</strong>: excluded (e.g. OS filter, template, powered off, controller, …).</span>
-              <span class="os-override-hint">Use <strong>→ Out of scope</strong> / <strong>→ In scope</strong> to move OS rows between buckets for what-if review. Inventory VM/host/core counts stay as analyzed; click <strong>Recalculate risk score</strong> to update unsupported OS % and the score using your current in-scope list.</span>
+              <div class="label-row" style="margin-bottom:0.25rem;">
+                <h3 class="os-discovered-heading" style="margin:0;">{{ t('os_heading') }}</h3>
+                <span class="help-wrap" data-help-wrap>
+                  <button type="button" class="help-btn" data-help="risk_os" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+                  <span class="help-balloon" role="tooltip">{{ i18n_help['risk_os'] }}</span>
+                </span>
+              </div>
+              <span class="os-scope-hint">{{ t('os_hint_scope') | safe }}</span>
+              <span class="os-override-hint">{{ t('os_hint_move') | safe }}</span>
               {% if result.risk_summary %}
               <div style="margin-bottom:0.75rem;">
-                <button type="button" class="os-recalc-risk-btn" id="risk-recalc-btn">Recalculate risk score</button>
+                <button type="button" class="os-recalc-risk-btn" id="risk-recalc-btn">{{ t('btn_recalc_risk') }}</button>
               </div>
               {% endif %}
-              <div class="os-scope-toggle" role="tablist" aria-label="Scope filter for OS list">
-                <button type="button" class="os-scope-btn active" role="tab" aria-selected="true" id="os-scope-btn-in" data-os-scope="in">In scope</button>
-                <button type="button" class="os-scope-btn" role="tab" aria-selected="false" id="os-scope-btn-out" data-os-scope="out">Out of scope</button>
+              <div class="os-scope-toggle" role="tablist" aria-label="{{ t('os_scope_aria') }}">
+                <button type="button" class="os-scope-btn active" role="tab" aria-selected="true" id="os-scope-btn-in" data-os-scope="in">{{ t('os_in_scope') }}</button>
+                <button type="button" class="os-scope-btn" role="tab" aria-selected="false" id="os-scope-btn-out" data-os-scope="out">{{ t('os_out_scope') }}</button>
               </div>
               <div class="os-scope-panel" id="os-panel-in" role="tabpanel" aria-labelledby="os-scope-btn-in">
                 <ul class="os-list" id="os-list-in"></ul>
@@ -754,18 +979,18 @@
               <div class="os-scope-panel" id="os-panel-out" role="tabpanel" aria-labelledby="os-scope-btn-out" hidden>
                 <ul class="os-list" id="os-list-out"></ul>
               </div>
-              <button type="button" class="os-reset-btn" id="os-reset-defaults">Reset to analysis defaults</button>
+              <button type="button" class="os-reset-btn" id="os-reset-defaults">{{ t('btn_os_reset') }}</button>
             </div>
           {% endif %}
           {% if result.tables %}
-          <p class="hint" style="margin-bottom:1rem;">Tables focused on inventory, OS, clusters, and similar views (duration-specific tables are under <strong>Duration estimate</strong>).</p>
+          <p class="hint" style="margin-bottom:1rem;">{{ t('risk_tables_hint') | safe }}</p>
           {% for kind, html in result.tables %}
             <div class="table-block">{{ html | safe }}</div>
           {% endfor %}
           {% elif result.risk_summary %}
-          <p class="hint" style="margin-bottom:0;">No additional tables were produced; the score above reflects inventory scale and unsupported OS share.</p>
+          <p class="hint" style="margin-bottom:0;">{{ t('risk_no_extra_tables') }}</p>
           {% elif result.discovered_os and (result.discovered_os['in_scope'] or result.discovered_os['out_of_scope']) %}
-          <p class="hint" style="margin-bottom:0;">No tabular outputs for this tab; the OS list above summarizes discovered guest OS by scope.</p>
+          <p class="hint" style="margin-bottom:0;">{{ t('risk_only_os') }}</p>
           {% endif %}
         {% endif %}
       </div>
@@ -775,22 +1000,26 @@
     <section class="tab-panel flat-top" data-panel="duration" id="panel-duration" role="tabpanel" aria-labelledby="tab-btn-duration">
       <div class="panel-inner">
         {% if result is none %}
-          <p class="empty-state">Run an analysis from the <strong>Import</strong> tab to see migration time and calendar estimates here.</p>
+          <p class="empty-state">{{ t('duration_empty') | safe }}</p>
         {% else %}
-          <p class="hint" style="margin-bottom:1rem;">
-            Estimates follow the notebook model: e.g. migration time scaled by provisioned disk (110 minutes per 500&nbsp;GB),
-            post-migration time per VM, and parallelization across FTEs (defaults in the notebook). See the full
-            <strong>Overview</strong> log for all printed details.
+          <div class="label-row" style="margin-bottom:0.5rem;">
+            <p class="hint" style="margin:0; flex:1; min-width:min(100%, 520px);">
+            {{ t('duration_hint') | safe }}
             {% if result.duration and result.duration.recalc %}
-              Adjust <strong>FTE</strong> below to recalculate calendar days and weeks (same formulas as the analysis; total migration minutes are unchanged).
+              {{ t('duration_hint_fte') | safe }}
             {% endif %}
-          </p>
+            </p>
+            <span class="help-wrap" data-help-wrap>
+              <button type="button" class="help-btn" data-help="duration_fte" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+              <span class="help-balloon" role="tooltip">{{ i18n_help['duration_fte'] }}</span>
+            </span>
+          </div>
           {% if result.duration and result.duration.recalc %}
             <script type="application/json" id="duration-recalc-json">{{ result.duration.recalc | tojson }}</script>
             <div class="duration-fte-toolbar">
-              <label for="duration-fte-input">FTE (parallel workers)</label>
+              <label for="duration-fte-input">{{ t('label_fte') }}</label>
               <input type="number" class="duration-fte-input" id="duration-fte-input" min="0.1" max="999" step="0.1" value="{{ result.duration.recalc.fte_count_default }}">
-              <span class="hint" style="margin:0;">{{ result.duration.recalc.te_hours_per_day }}&nbsp;h/day per FTE; calendar days scale as 1/FTE.</span>
+              <span class="hint" style="margin:0;">{{ t('hint_fte_hours', h=result.duration.recalc.te_hours_per_day) | safe }}</span>
             </div>
             <div id="duration-tables-live" class="duration-recalc-wrap table-block"></div>
           {% elif result.duration and result.duration.tables %}
@@ -799,13 +1028,13 @@
             {% endfor %}
           {% endif %}
           {% if result.duration and result.duration.log_excerpt %}
-            <h2 style="font-size:1rem; margin: 1rem 0 0.5rem;">Printed totals (from log)</h2>
+            <h2 style="font-size:1rem; margin: 1rem 0 0.5rem;">{{ t('duration_log_h2') }}</h2>
             <pre class="log">{{ result.duration.log_excerpt }}</pre>
           {% endif %}
           {% if not result.duration %}
-            <p class="empty-state">No duration data was returned. Check the <strong>Overview</strong> tab.</p>
+            <p class="empty-state">{{ t('duration_no_data') | safe }}</p>
           {% elif not result.duration.tables and not result.duration.log_excerpt and not result.duration.recalc %}
-            <p class="empty-state">No duration-specific tables or log lines were detected for this run. Check the <strong>Overview</strong> tab for the full log.</p>
+            <p class="empty-state">{{ t('duration_no_tables') | safe }}</p>
           {% endif %}
         {% endif %}
       </div>
@@ -815,28 +1044,104 @@
     <section class="tab-panel flat-top" data-panel="graphics" id="panel-graphics" role="tabpanel" aria-labelledby="tab-btn-graphics">
       <div class="panel-inner">
         {% if result is none %}
-          <p class="empty-state">Run an analysis from the <strong>Import</strong> tab to view charts here.</p>
+          <p class="empty-state">{{ t('graphics_empty') | safe }}</p>
         {% elif not result.figures %}
-          <p class="empty-state">No charts were generated.</p>
+          <p class="empty-state">{{ t('graphics_none') }}</p>
         {% else %}
           {% set titles = result.figure_titles or [] %}
-          <p class="hint" style="margin-bottom:0.75rem;">{{ result.figures|length }} figure(s) — pick one from the list.</p>
+          <div class="label-row" style="margin-bottom:0.65rem;">
+            <p class="hint" style="margin:0;">{{ t('graphics_pick', n=result.figures|length) }}</p>
+            <span class="help-wrap" data-help-wrap>
+              <button type="button" class="help-btn" data-help="graphics" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+              <span class="help-balloon" role="tooltip">{{ i18n_help['graphics'] }}</span>
+            </span>
+          </div>
           <div class="chart-toolbar">
-            <label for="chart-select" class="chart-select-label">Select chart</label>
-            <select id="chart-select" class="chart-select" aria-label="Select chart to display">
+            <label for="chart-select" class="chart-select-label">{{ t('chart_select') }}</label>
+            <select id="chart-select" class="chart-select" aria-label="{{ t('chart_select_aria') }}">
               {% for img in result.figures %}
-                <option value="{{ loop.index0 }}">{% if loop.index0 < titles|length %}{{ titles[loop.index0] }}{% else %}Chart {{ loop.index }} (of {{ result.figures|length }}){% endif %}</option>
+                <option value="{{ loop.index0 }}">{% if loop.index0 < titles|length %}{{ titles[loop.index0] }}{% else %}{{ t('chart_alt', n=loop.index) }} ({{ loop.index }}/{{ result.figures|length }}){% endif %}</option>
               {% endfor %}
             </select>
           </div>
           <div class="chart-stage" id="chart-stage">
             {% for img in result.figures %}
               <div class="chart-slide{% if loop.first %} is-active{% endif %}" data-chart-index="{{ loop.index0 }}">
-                <img src="data:image/png;base64,{{ img }}" alt="{% if loop.index0 < titles|length %}{{ titles[loop.index0] }}{% else %}Chart {{ loop.index }}{% endif %}">
+                <img src="data:image/png;base64,{{ img }}" alt="{% if loop.index0 < titles|length %}{{ titles[loop.index0] }}{% else %}{{ t('chart_alt', n=loop.index) }}{% endif %}">
               </div>
             {% endfor %}
           </div>
         {% endif %}
+      </div>
+    </section>
+
+    <!-- OpenShift Install-Config Generator (o-i-creator) -->
+    <section class="tab-panel flat-top" data-panel="oic" id="panel-oic" role="tabpanel" aria-labelledby="tab-btn-oic">
+      <div class="panel-inner">
+        <div class="label-row" style="margin-bottom:0.35rem;">
+          <h2 style="margin:0;">{{ t('oic_h2') }}</h2>
+          <span class="help-wrap" data-help-wrap>
+            <button type="button" class="help-btn" data-help="oic" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['oic'] }}</span>
+          </span>
+        </div>
+        <p class="hint">{{ t('oic_intro') | safe }}</p>
+        <div class="oic-frame-wrap">
+          <iframe
+            class="oic-frame"
+            src="{{ url_for('oic_index') }}"
+            title="{{ t('oic_iframe_title') }}"
+            loading="lazy"
+            referrerpolicy="same-origin"
+          ></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- Project plan proposal (static template) -->
+    <section class="tab-panel flat-top" data-panel="projectplan" id="panel-projectplan" role="tabpanel" aria-labelledby="tab-btn-projectplan">
+      <div class="panel-inner">
+        <div class="label-row" style="margin-bottom:0.35rem;">
+          <h2 style="margin:0;">{{ t('plan_h2') }}</h2>
+          <span class="help-wrap" data-help-wrap>
+            <button type="button" class="help-btn" data-help="project_plan" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['project_plan'] }}</span>
+          </span>
+        </div>
+        <p class="plan-intro">{{ t('plan_intro') | safe }}</p>
+
+        <h2 style="font-size:1rem; margin:0 0 0.5rem;">{{ t('plan_phases_h2') }}</h2>
+        <div class="plan-table-wrap">
+          <table class="plan-phases">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('plan_th_phase') }}</th>
+                <th scope="col">{{ t('plan_th_goals') }}</th>
+                <th scope="col">{{ t('plan_th_activities') }}</th>
+                <th scope="col">{{ t('plan_th_deliverables') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in plan_rows %}
+              <tr>
+                <td>{{ row.phase }}</td>
+                <td>{{ row.goals }}</td>
+                <td>{{ row.activities }}</td>
+                <td>{{ row.deliverables | safe }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h2 style="font-size:1rem; margin:0 0 0.5rem;">{{ t('plan_ms_h2') }}</h2>
+        <ul class="plan-milestones">
+          {% for ms in plan_milestones %}
+          <li>{{ ms | safe }}</li>
+          {% endfor %}
+        </ul>
+
+        <p class="plan-note">{{ t('plan_note') | safe }}</p>
       </div>
     </section>
   </div>
@@ -851,13 +1156,20 @@
           <span></span><span></span><span></span><span></span><span></span>
         </div>
       </div>
-      <p id="thinking-status" class="thinking-status">Working…</p>
-      <p class="thinking-hint">Analyzing inventory — this can take a while for large exports. Please keep this page open.</p>
+      <p id="thinking-status" class="thinking-status">{{ t('thinking_status') }}</p>
+      <p id="thinking-hint" class="thinking-hint">{{ t('thinking_hint') }}</p>
     </div>
   </div>
 
   <script>
     (function () {
+      var i18nEl = document.getElementById("i18n-bootstrap");
+      var I18N = { locale: "en", strings: {}, help: {} };
+      try {
+        if (i18nEl && i18nEl.textContent) I18N = JSON.parse(i18nEl.textContent);
+      } catch (e1) {}
+      window.__I18N = I18N;
+
       var initial = document.body.getAttribute("data-initial-tab") || "import";
       var buttons = document.querySelectorAll(".tab-btn");
       var panels = document.querySelectorAll(".tab-panel");
@@ -886,26 +1198,39 @@
 
       showTab(initial);
 
+      /* Help balloons: click toggles (touch); hover still works from CSS */
+      (function () {
+        document.body.addEventListener("click", function (e) {
+          var btn = e.target.closest(".help-btn");
+          document.querySelectorAll(".help-wrap.is-open").forEach(function (w) {
+            if (!btn || !w.contains(btn)) w.classList.remove("is-open");
+          });
+          if (!btn) return;
+          var wrap = btn.closest(".help-wrap");
+          if (!wrap) return;
+          e.preventDefault();
+          var open = !wrap.classList.contains("is-open");
+          wrap.classList.toggle("is-open", open);
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      })();
+
       /* Import: show “thinking” overlay after submit (server runs synchronously) */
       (function () {
         var overlay = document.getElementById("import-thinking-overlay");
         var statusEl = document.getElementById("thinking-status");
+        var hintEl = document.getElementById("thinking-hint");
         if (!overlay || !statusEl) return;
 
-        var messagesUpload = [
+        var S = I18N.strings || {};
+        var messagesUpload = S.thinking_upload || [
           "Reading RVTools files…",
           "Parsing spreadsheets…",
           "Running analysis…",
           "Aggregating tables…",
           "Building charts…",
         ];
-        var messagesVcenter = [
-          "Connecting to vCenter…",
-          "Collecting inventory…",
-          "Running analysis…",
-          "Aggregating tables…",
-          "Building charts…",
-        ];
+        var messagesVcenter = S.thinking_vcenter || messagesUpload;
         var tick = null;
 
         function showThinkingOverlay(messages) {
@@ -914,6 +1239,7 @@
           document.body.classList.add("import-processing");
           var i = 0;
           statusEl.textContent = messages[0];
+          if (hintEl && S.thinking_hint) hintEl.textContent = S.thinking_hint;
           if (tick) clearInterval(tick);
           tick = setInterval(function () {
             i = (i + 1) % messages.length;
@@ -1027,12 +1353,13 @@
           outUl.innerHTML = "";
 
           function fill(ul, rows, listKind) {
+            var S = I18N.strings || {};
             if (!rows.length) {
               var li = document.createElement("li");
               li.className = "os-list-empty-row";
               var p = document.createElement("p");
               p.className = "os-list-empty";
-              p.textContent = listKind === "in" ? "No in-scope OS rows." : "No out-of-scope OS rows.";
+              p.textContent = listKind === "in" ? (S.os_empty_in || "No in-scope OS rows.") : (S.os_empty_out || "No out-of-scope OS rows.");
               li.appendChild(p);
               ul.appendChild(li);
               return;
@@ -1047,18 +1374,18 @@
               meta.className = "os-meta";
               var count = document.createElement("span");
               count.className = "os-count";
-              count.textContent = row.vm_count === 1 ? "1 VM" : row.vm_count + " VMs";
+              count.textContent = row.vm_count === 1 ? (S.vm_one || "1 VM") : (S.vm_many || "{n} VMs").replace("{n}", String(row.vm_count));
               var btn = document.createElement("button");
               btn.type = "button";
               btn.className = "os-move-btn";
               if (listKind === "in") {
-                btn.textContent = "→ Out of scope";
+                btn.textContent = S.os_move_out || "→ Out of scope";
                 btn.dataset.move = "to-out";
-                btn.setAttribute("aria-label", "Move " + row.os + " to out of scope");
+                btn.setAttribute("aria-label", (S.os_aria_out || "Move {os} to out of scope").replace("{os}", row.os));
               } else {
-                btn.textContent = "→ In scope";
+                btn.textContent = S.os_move_in || "→ In scope";
                 btn.dataset.move = "to-in";
-                btn.setAttribute("aria-label", "Move " + row.os + " to in scope");
+                btn.setAttribute("aria-label", (S.os_aria_in || "Move {os} to in scope").replace("{os}", row.os));
               }
               btn.dataset.os = row.os;
               meta.appendChild(count);
@@ -1108,9 +1435,10 @@
         }
 
         function labelFromScore(score) {
-          if (score >= 70) return { text: "High", sev: "high" };
-          if (score >= 40) return { text: "Medium", sev: "medium" };
-          return { text: "Low", sev: "low" };
+          var S = I18N.strings || {};
+          if (score >= 70) return { text: S.risk_high || "High", sev: "high" };
+          if (score >= 40) return { text: S.risk_medium || "Medium", sev: "medium" };
+          return { text: S.risk_low || "Low", sev: "low" };
         }
 
         function restoreRiskFromInitial() {
@@ -1122,7 +1450,7 @@
           try {
             var init = JSON.parse(initEl.textContent);
             scoreEl.textContent = String(init.score);
-            labelEl.textContent = init.label;
+            labelEl.textContent = init.label_i18n != null ? init.label_i18n : init.label;
             scoreEl.className = "risk-score-number sev-" + String(init.label).toLowerCase();
             var p0 = init.unsupported_pct;
             pctEl.textContent = (typeof p0 === "number" ? p0.toFixed(2) : String(p0)) + "%";
@@ -1259,6 +1587,7 @@
         }
 
         function render() {
+          var D = (I18N.strings && I18N.strings.duration) || {};
           var fte = parseFloat(fteInput.value, 10);
           if (isNaN(fte) || fte < 0.1) fte = 0.1;
           fteInput.value = String(fte);
@@ -1269,10 +1598,10 @@
             : Array.from(new Set(grain.map(function (r) { return r.environment; }))).sort();
 
           var html = "";
-          html += "<h3>Environment summary (migration estimate)</h3>";
-          html += "<p class=\"hint\" style=\"margin:0 0 0.65rem; font-size:0.78rem;\">Uncheck <strong>Include</strong> to remove an environment from duration (migration summary and global totals update).</p>";
+          html += "<h3>" + esc(D.env_summary || "Environment summary (migration estimate)") + "</h3>";
+          html += "<p class=\"hint\" style=\"margin:0 0 0.65rem; font-size:0.78rem;\">" + (D.hint_uncheck || "Uncheck <strong>Include</strong> to remove an environment from duration (migration summary and global totals update).") + "</p>";
           html += "<table class=\"table table-sm\"><thead><tr>";
-          ["Environment", "Include", "VM Count", "Total Disk (TB)", "Total Days", "Total Weeks"].forEach(function (h) {
+          [D.col_env || "Environment", D.col_include || "Include", D.col_vm || "VM Count", D.col_disk || "Total Disk (TB)", D.col_days || "Total Days", D.col_weeks || "Total Weeks"].forEach(function (h) {
             html += "<th>" + esc(h) + "</th>";
           });
           html += "</tr></thead><tbody>";
@@ -1291,13 +1620,13 @@
             var w = d / 5;
             var chk = inc ? " checked" : "";
             html += "<tr><td>" + esc(envName) + "</td>";
-            html += "<td class=\"env-include-cell\"><label><input type=\"checkbox\" class=\"env-duration-include\" data-env-idx=\"" + envIdx + "\"" + chk + "> <span>Include</span></label></td>";
+            html += "<td class=\"env-include-cell\"><label><input type=\"checkbox\" class=\"env-duration-include\" data-env-idx=\"" + envIdx + "\"" + chk + "> <span>" + esc(D.include_span || "Include") + "</span></label></td>";
             html += "<td>" + fmtInt(s.vm) + "</td>";
             html += "<td>" + fmt1(s.disk) + " TB</td>";
             html += "<td>" + fmt1(d) + "</td><td>" + fmt1(w) + "</td></tr>";
           });
 
-          html += "<tr><td><strong>Total (included)</strong></td><td></td>";
+          html += "<tr><td><strong>" + esc(D.total_included || "Total (included)") + "</strong></td><td></td>";
           html += "<td><strong>" + fmtInt(totVm) + "</strong></td>";
           html += "<td><strong>" + fmt1(totDisk) + " TB</strong></td>";
           var dTot = daysFromMinutes(totMin, fte);
@@ -1312,9 +1641,10 @@
               if (c !== 0) return c;
               return String(a.os_support).localeCompare(String(b.os_support));
             });
-            html += "<h3>Migration summary — " + esc(vcName) + "</h3>";
+            var ms = (D.migration_summary || "Migration summary — {name}").replace("{name}", vcName);
+            html += "<h3>" + esc(ms) + "</h3>";
             html += "<table class=\"table table-sm\"><thead><tr>";
-            ["Complexity", "OS Support", "VM Count", "Total Disk (TB)", "Total Migration Time", "Total Days"].forEach(function (h) {
+            [D.col_complexity || "Complexity", D.col_os_support || "OS Support", D.col_vm || "VM Count", D.col_disk || "Total Disk (TB)", D.col_mig_time || "Total Migration Time", D.col_total_days || "Total Days"].forEach(function (h) {
               html += "<th>" + esc(h) + "</th>";
             });
             html += "</tr></thead><tbody>";
@@ -1328,7 +1658,7 @@
               html += "<td>" + fmt1(dpf) + "</td></tr>";
             });
             var dSum = daysFromMinutes(sumMin, fte);
-            html += "<tr><td><strong>Totals</strong></td><td></td><td></td><td></td>";
+            html += "<tr><td><strong>" + esc(D.totals_row || "Totals") + "</strong></td><td></td><td></td><td></td>";
             html += "<td><strong>" + esc(fmtHoursFromMin(sumMin)) + "</strong></td><td><strong>" + fmt1(dSum) + "</strong></td></tr>";
             html += "</tbody></table>";
           });
@@ -1339,11 +1669,11 @@
           });
           var gd = daysFromMinutes(gMin, fte);
           var gw = gd / 5;
-          html += "<h3>Global totals (included environments)</h3>";
+          html += "<h3>" + esc(D.global_totals || "Global totals (included environments)") + "</h3>";
           html += "<table class=\"table table-sm\"><tbody>";
-          html += "<tr><th>Global Total Migration Time</th><td>" + esc(fmtHoursFromMin(gMin)) + "</td></tr>";
-          html += "<tr><th>Global Total Days</th><td>" + fmt1(gd) + "</td></tr>";
-          html += "<tr><th>Global Total Weeks</th><td>" + fmt1(gw) + "</td></tr>";
+          html += "<tr><th>" + esc(D.global_mig_time || "Global Total Migration Time") + "</th><td>" + esc(fmtHoursFromMin(gMin)) + "</td></tr>";
+          html += "<tr><th>" + esc(D.global_days || "Global Total Days") + "</th><td>" + fmt1(gd) + "</td></tr>";
+          html += "<tr><th>" + esc(D.global_weeks || "Global Total Weeks") + "</th><td>" + fmt1(gw) + "</td></tr>";
           html += "</tbody></table>";
 
           root.innerHTML = html;

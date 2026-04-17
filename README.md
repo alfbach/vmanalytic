@@ -1,171 +1,124 @@
-# VMAnalytic App
+# VMAnalytic
 
-**VMAnalytic** is a web application for analyzing VMware inventory from **RVTools**-style Excel workbooks or from a live **vCenter** connection. It provides overview metrics, risk scoring, migration duration estimates, and charts—without requiring Jupyter.
+VMAnalytic is a web application for analyzing VMware inventory from RVTools-style Excel exports or from a live vCenter connection.
+
+The app provides:
+- inventory overview and execution logs
+- migration risk scoring
+- migration duration estimation
+- charts and tabular outputs
+- an integrated OpenShift install-config helper tab (embedded from `/Users/abach/o-i-creator`)
 
 ---
 
-## Features
+## License (GPL-2.0)
 
-- **Import** — Upload one or more RVTools `.xlsx` files, or connect to vCenter (via pyVmomi) and build a compatible workbook in memory.
-- **Overview** — Execution log and high-level status after analysis.
-- **Risk analysis** — Overall risk score, discovered guest OS lists (in/out of scope), pattern-based scope controls, and tabular outputs (e.g. migration complexity).
-- **Duration estimate** — Migration time estimates with FTE-based calendar recalculation and per-environment inclusion.
-- **Graphics** — Matplotlib figures as PNG previews in the browser.
-- **Light UI** — Modern light interface suitable for desktop use; optional **Waitress** (local) or **Gunicorn** (Docker).
+This project is licensed under the **GNU General Public License, version 2.0** (GPL-2.0-only).
+
+You may copy, modify, and redistribute this software under the terms of GPL v2.
+See the full license text in the [`LICENSE`](LICENSE) file.
+
+---
+
+## Warranty and Liability Disclaimer
+
+This software is provided **"AS IS"**, without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+
+To the maximum extent permitted by applicable law, the authors and contributors are **not liable** for any claim, damages, or other liability, whether in contract, tort, or otherwise, arising from, out of, or in connection with the software or the use of the software.
 
 ---
 
 ## Requirements
 
-- **Python 3.12+** (recommended) for running from source.
-- **RVTools exports** must include at least sheets: `vInfo`, `vHost`, `vDisk` (names normalized automatically where possible).
-
-Python dependencies are listed in [`requirements.txt`](requirements.txt) (Flask, Waitress, pyVmomi, pandas, NumPy, Matplotlib, openpyxl, etc.).
+- Python 3.12+ (recommended)
+- pip
+- RVTools exports (`.xlsx`) with required sheets such as `vInfo`, `vHost`, `vDisk`
+- Optional for embedded OpenShift tab: local project available at `/Users/abach/o-i-creator` (serves static UI under `/oic/`)
 
 ---
 
-## Installation (from source)
+## Local Setup (Development)
 
-Clone or extract this repository, then from the project root:
+From the project root:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate          # Linux / macOS
-# .venv\Scripts\activate           # Windows (cmd)
-
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
----
-
-## Running the application
-
-### Option A — Flask development server
+Run with Flask (development server):
 
 ```bash
 export FLASK_APP=web.app
 flask run --host 127.0.0.1 --port 5000
 ```
 
-Or use the helper script [`run-web.sh`](run-web.sh) (Linux / macOS).
+Open:
 
-### Option B — Waitress (recommended for local desktop use)
+- [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-Starts **Waitress** and opens your default browser (where a display is available).
-
-**Linux / macOS:**
+Alternative local run helper:
 
 ```bash
-chmod +x Start-VMAnalytic.sh
-./Start-VMAnalytic.sh
+./run-web.sh
 ```
 
-**Windows:**
+---
 
-```text
-Start-VMAnalytic.bat
-```
+## Run on a Web Server (Production)
 
-**Manual:**
+### Option A: Gunicorn (recommended)
 
 ```bash
-export PYTHONPATH="$(pwd)"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+export FLASK_SECRET_KEY="replace-with-a-long-random-value"
+gunicorn -w 3 -b 0.0.0.0:5000 web.app:app
+```
+
+Use Nginx or Apache as reverse proxy in front of Gunicorn.
+
+### Option B: Waitress
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+export FLASK_SECRET_KEY="replace-with-a-long-random-value"
 python local_server.py
 ```
 
-Optional environment variables: `HOST` (default `127.0.0.1`), `PORT` (default `5000`), `WAITRESS_THREADS`.
-
-### Option C — Docker
-
-Build and run from the repository root:
+### Option C: Docker
 
 ```bash
 docker build -t vmanalytic .
 docker run --rm -p 5000:5000 \
-  -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
+  -e FLASK_SECRET_KEY="replace-with-a-long-random-value" \
   vmanalytic
 ```
 
-Then open `http://localhost:5000`.
-
-The image uses **Gunicorn** on port **5000** inside the container.
-
-### Option D — Kubernetes
-
-Manifests live under [`k8s/`](k8s/). Create a secret for `FLASK_SECRET_KEY`, then apply:
-
-```bash
-kubectl apply -f k8s/namespace.yaml
-kubectl -n vmanalytic create secret generic vmanalytic-secrets \
-  --from-literal=flask-secret-key="$(openssl rand -hex 32)"
-kubectl apply -k k8s/
-```
-
-Edit `k8s/deployment.yaml` to point `image:` at your registry. See comments in [`k8s/kustomization.yaml`](k8s/kustomization.yaml).
-
-### Option E — PyInstaller (standalone binary)
-
-- **Windows:** run [`build-windows-exe.ps1`](build-windows-exe.ps1) on Windows → `dist/VMAnalytic.exe`.
-- **Linux / macOS:** run [`build-linux-app.sh`](build-linux-app.sh) on the target OS → `dist/VMAnalytic`.
-
-Bundled runs store writable data under the platform-specific user data directory (see below).
+Then open [http://localhost:5000](http://localhost:5000).
 
 ---
 
-## Configuration
+## Recommended Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `FLASK_SECRET_KEY` | Secret key for Flask sessions (set in production / Docker / Kubernetes). |
-| `HOST` | Bind address for Waitress (default `127.0.0.1`). |
-| `PORT` | Port (default `5000`). |
-| `VMANALYTIC_ROOT` | Override for the project “root” used for sessions and pattern files (advanced; set automatically for frozen PyInstaller builds). |
-| `XDG_DATA_HOME` | Linux: base directory for user data (default `~/.local/share`). |
+- `FLASK_SECRET_KEY` (required for production)
+- `HOST` (default `127.0.0.1`)
+- `PORT` (default `5000`)
+- `VMANALYTIC_ROOT` (optional custom app data root)
 
 ---
 
-## Data and storage
+## Notes
 
-- **From source:** analysis sessions and uploads are created under `data/uploads/` in the project tree.
-- **PyInstaller (frozen):** writable data is stored under:
-  - **Windows:** `%LOCALAPPDATA%\VMAnalytic`
-  - **Linux:** `$XDG_DATA_HOME/VMAnalytic` (often `~/.local/share/VMAnalytic`)
-  - **macOS:** `~/Library/Application Support/VMAnalytic`
-- **`helper_files/`** — OS filter and ignore patterns; copied into each session when running from a repository checkout; bundled apps copy defaults into the user data directory on first run.
+- The embedded OpenShift helper is served from `/oic/` and depends on static files from `/Users/abach/o-i-creator/static`.
+- If that directory is missing, the OpenShift tab will not load.
 
 ---
 
-## Project layout (overview)
+## Copyright
 
-| Path | Role |
-|------|------|
-| [`web/`](web/) | Flask app (`app.py`), templates, static assets |
-| [`vm_analysis/`](vm_analysis/) | Analysis pipeline (`runner.py`, `body_exec.py`, vCenter collector, etc.) |
-| [`helper_files/`](helper_files/) | Pattern text files for OS filtering |
-| [`local_server.py`](local_server.py) | Waitress entry point for desktop use |
-| [`k8s/`](k8s/) | Kubernetes manifests |
-| [`Dockerfile`](Dockerfile) | Container image |
-
----
-
-## License
-
-This program is **free software**: you can redistribute it and/or modify it under the terms of the **GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version**.
-
-The full text of the GNU General Public License version 2 is included in the [`LICENSE`](LICENSE) file in this repository.
-
-This program is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of **merchantability** or **fitness for a particular purpose**. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. If not, see [https://www.gnu.org/licenses/old-licenses/gpl-2.0.html](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).
-
-### Copyright
-
-Copyright © 2026 VMAnalytic contributors.
-
-To apply the GPL v2 to your own work, add the standard copyright and license notices to each source file, as described in the “How to Apply These Terms to Your New Programs” section at the end of the [`LICENSE`](LICENSE) file.
-
----
-
-## Third-party components
-
-This software uses several open-source libraries (Flask, pandas, Matplotlib, pyVmomi, etc.). Their respective licenses apply to those components. The GNU GPL v2 applies to **this project’s** combined work when distributed as a whole, subject to the usual GPL compatibility rules for linked libraries.
+Copyright (c) 2026 VMAnalytic contributors.
