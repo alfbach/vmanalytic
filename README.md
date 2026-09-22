@@ -146,72 +146,51 @@ Notes for Podman on macOS: start the machine first if needed (`podman machine st
 
 ## Deploy on OpenShift
 
-Manifests live under [`k8s/`](k8s/). They work with `oc` (OpenShift CLI) the same way as with `kubectl`.
+Deploy from the **project root** (the directory that contains this `README.md` and the `Dockerfile`). All `oc` commands below assume you start there after `oc login`.
 
-### 1. Build and push the image
+Manifests live under [`k8s/`](k8s/).
 
-Pick a registry your cluster can pull from (Quay, OpenShift internal registry, etc.):
-
-```bash
-# Example: Quay
-export REGISTRY=quay.io/<org>
-export IMAGE=${REGISTRY}/vmanalytic:latest
-
-podman build -t "${IMAGE}" .
-podman push "${IMAGE}"
-```
-
-OpenShift internal registry (logged in with `oc`):
+### 1. Create the project and build from this directory
 
 ```bash
-oc new-project vmanalytic   # or: oc project vmanalytic
-HOST=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2>/dev/null || true)
-# Alternative: use ImageStream + build in-cluster (see below)
-podman build -t image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest .
-# Prefer pushing via an exposed registry route or an external registry your cluster trusts
-```
+# From the VMAnalytic repository root:
+cd /path/to/vmanalytic
 
-In-cluster build from the Git repo (no local push required):
-
-```bash
 oc new-project vmanalytic
+# or reuse an existing project:
+# oc project vmanalytic
+
+# Create a Docker strategy BuildConfig + ImageStream, then upload this directory
 oc new-build --name=vmanalytic --binary --strategy=docker
 oc start-build vmanalytic --from-dir=. --follow
-# Image lands in ImageStream vmanalytic in the project
+```
+
+`--from-dir=.` sends the current directory (source + `Dockerfile`) to OpenShift; the cluster builds the image into ImageStream `vmanalytic:latest` in the project. No external registry push is required.
+
+Rebuild later from the same directory:
+
+```bash
+oc start-build vmanalytic --from-dir=. --follow
 ```
 
 ### 2. Create the Flask secret
 
 ```bash
-oc apply -f k8s/namespace.yaml
 oc -n vmanalytic create secret generic vmanalytic-secrets \
   --from-literal=flask-secret-key="$(openssl rand -hex 32)" \
   --dry-run=client -o yaml | oc apply -f -
 ```
 
-### 3. Point the Deployment at your image
-
-Edit `k8s/deployment.yaml` (or set the image after apply):
-
-```bash
-# After applying manifests, set the image you pushed / built:
-oc -n vmanalytic set image deployment/vmanalytic \
-  app=IMAGE_REF_HERE
-
-# Examples:
-#   app=quay.io/<org>/vmanalytic:latest
-#   app=image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest
-```
-
-### 4. Apply Kubernetes / OpenShift resources
+### 3. Deploy from the ImageStream built above
 
 ```bash
 oc apply -k k8s/
-# Or individually:
-# oc apply -f k8s/namespace.yaml
-# oc apply -f k8s/deployment.yaml
-# oc apply -f k8s/service.yaml
+oc -n vmanalytic set image deployment/vmanalytic \
+  app=image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest
+oc -n vmanalytic rollout status deployment/vmanalytic
 ```
+
+If the Deployment was applied before the first successful build, wait for the build to finish, then run `set image` / `rollout` again.
 
 Optional persistent uploads (edit `k8s/pvc.yaml` storage class, then wire the PVC into the Deployment as described in that file):
 
@@ -219,9 +198,7 @@ Optional persistent uploads (edit `k8s/pvc.yaml` storage class, then wire the PV
 oc apply -f k8s/pvc.yaml
 ```
 
-### 5. Expose the app (Route)
-
-Prefer an OpenShift Route over the sample Ingress:
+### 4. Expose the app (Route)
 
 ```bash
 oc -n vmanalytic expose service/vmanalytic --name=vmanalytic
@@ -233,10 +210,10 @@ oc -n vmanalytic get route vmanalytic
 
 If your cluster uses Ingress instead, uncomment `ingress.yaml` in `k8s/kustomization.yaml`, set `host` / `ingressClassName`, then `oc apply -k k8s/`.
 
-### 6. Verify
+### 5. Verify
 
 ```bash
-oc -n vmanalytic get pods,svc,route
+oc -n vmanalytic get pods,svc,route,build,imagestream
 oc -n vmanalytic logs -f deploy/vmanalytic
 ```
 
