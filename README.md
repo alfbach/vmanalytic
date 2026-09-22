@@ -1,117 +1,96 @@
 # VMAnalytic
 
-VMAnalytic is a web application for analyzing VMware inventory from RVTools-style Excel exports or from a live vCenter connection.
+Web app for analyzing VMware inventory from **RVTools-style `.xlsx` exports** or a **live vCenter** connection (pyVmomi).
 
-The app provides:
-- inventory overview and execution logs
-- migration risk scoring
-- migration duration estimation
-- charts and tabular outputs
-- an integrated OpenShift install-config helper tab (embedded from `/Users/abach/o-i-creator`)
+**Features**
 
----
-
-## License (GPL-2.0)
-
-This project is licensed under the **GNU General Public License, version 2.0** (GPL-2.0-only).
-
-You may copy, modify, and redistribute this software under the terms of GPL v2.
-See the full license text in the [`LICENSE`](LICENSE) file.
+- Import via file upload or vCenter credentials
+- Overview with execution log
+- Migration **risk score** (with client-side what-if OS scope + recalculate)
+- Migration **duration** estimates (FTE / environment toggles)
+- Charts and tabular outputs
+- Light / dark UI (PatternFly), EN / DE / FR / ES
+- Optional embedded OpenShift install-config helper at `/oic/`
 
 ---
 
-## Warranty and Liability Disclaimer
+## License
 
-This software is provided **"AS IS"**, without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement.
+**GPL-2.0-only** — see [`LICENSE`](LICENSE).
 
-To the maximum extent permitted by applicable law, the authors and contributors are **not liable** for any claim, damages, or other liability, whether in contract, tort, or otherwise, arising from, out of, or in connection with the software or the use of the software.
+## Disclaimer
+
+Provided **AS IS**, without warranty. Authors are not liable for damages arising from use of the software, to the maximum extent permitted by law.
 
 ---
 
 ## Requirements
 
-- Python 3.12+ (recommended)
-- pip
-- RVTools exports (`.xlsx`) with required sheets such as `vInfo`, `vHost`, `vDisk`
-- Optional for embedded OpenShift tab: local project available at `/Users/abach/o-i-creator` (serves static UI under `/oic/`)
+| Use case | Need |
+|----------|------|
+| Local / server | Python **3.12+**, pip |
+| Input data | RVTools `.xlsx` with sheets `vInfo`, `vHost`, `vDisk` (case-insensitive names are normalized) |
+| Containers | Podman or Docker; OpenShift: `oc` CLI after `oc login` |
+| `/oic/` tab (optional) | Static export of o-i-creator (`index.html` + assets); set `OIC_STATIC_ROOT` |
 
 ---
 
-## Local Setup (Development)
+## Quick start (local)
 
-From the project root:
+From the **repository root**:
 
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-Run with Flask (development server):
-
-```bash
 export FLASK_APP=web.app
-flask run --host 127.0.0.1 --port 5000
+flask run --host 127.0.0.1 --port 5050
 ```
 
-Open:
+Open [http://127.0.0.1:5050](http://127.0.0.1:5050).
 
-- [http://127.0.0.1:5000](http://127.0.0.1:5000)
-
-Alternative local run helper:
+Helpers:
 
 ```bash
-./run-web.sh
+./run-web.sh                 # Flask
+./Start-VMAnalytic.sh        # Waitress + browser (macOS/Linux)
+# Windows: Start-VMAnalytic.bat
 ```
+
+On macOS, port **5000** is often used by AirPlay Receiver — prefer **5050** (or disable AirPlay Receiver).
 
 ---
 
-## Run on a Web Server (Production)
+## Production (bare metal / VM)
 
-### Option A: Gunicorn (recommended)
+**Gunicorn**
 
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-export FLASK_SECRET_KEY="replace-with-a-long-random-value"
-gunicorn -w 3 -b 0.0.0.0:5000 web.app:app
+pip install -r requirements.txt 'gunicorn>=22.0.0'
+export FLASK_SECRET_KEY="$(openssl rand -hex 32)"
+gunicorn --bind 0.0.0.0:5000 --workers 2 --threads 2 --timeout 600 web.app:app
 ```
 
-Use Nginx or Apache as reverse proxy in front of Gunicorn.
-
-### Option B: Waitress
+**Waitress**
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-export FLASK_SECRET_KEY="replace-with-a-long-random-value"
+export FLASK_SECRET_KEY="$(openssl rand -hex 32)"
 python local_server.py
 ```
 
-### Option C: Docker
+Put Nginx/Apache (or an OpenShift Route) in front for TLS and access control.
 
-```bash
-docker build -t vmanalytic .
-docker run --rm -p 5000:5000 \
-  -e FLASK_SECRET_KEY="replace-with-a-long-random-value" \
-  vmanalytic
-```
+---
 
-Then open [http://localhost:5000](http://localhost:5000).
+## Podman
 
-### Option D: Podman
-
-Build the image from the project root (uses the included `Dockerfile`):
+Build and run from the repository root (`Dockerfile`):
 
 ```bash
 podman build -t vmanalytic:latest .
-```
 
-Run a local prototype container:
-
-```bash
 podman run --rm -p 5050:5000 \
   -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
   --name vmanalytic \
@@ -120,10 +99,11 @@ podman run --rm -p 5050:5000 \
 
 Open [http://127.0.0.1:5050](http://127.0.0.1:5050).
 
-Optional: persist upload sessions and mount an OpenShift install-config helper static export:
+With persistent data and optional `/oic/` static mount:
 
 ```bash
 mkdir -p ./data/uploads ./saved_csv_files
+
 podman run --rm -p 5050:5000 \
   -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
   -e OIC_STATIC_ROOT=/app/oic-static \
@@ -134,69 +114,50 @@ podman run --rm -p 5050:5000 \
   vmanalytic:latest
 ```
 
-Stop the container:
-
 ```bash
 podman stop vmanalytic
 ```
 
-Notes for Podman on macOS: start the machine first if needed (`podman machine start`). The `:Z` volume options help with SELinux labels on Linux; they are harmless elsewhere.
+macOS: `podman machine start` if the VM is not running. `:Z` is for SELinux on Linux hosts.
+
+**Docker** (same image definition):
+
+```bash
+docker build -t vmanalytic:latest .
+docker run --rm -p 5050:5000 \
+  -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
+  vmanalytic:latest
+```
 
 ---
 
 ## Deploy on OpenShift
 
-Deploy from the **project root** (the directory that contains this `README.md` and the `Dockerfile`). All `oc` commands below assume you start there after `oc login`.
+Deploy from the **directory where you start** (repository root: this `README.md` + `Dockerfile`). Log in first: `oc login …`.
 
-Manifests live under [`k8s/`](k8s/).
+Manifests: [`k8s/`](k8s/).
 
-### 1. Create the project and build from this directory
+### 1. Project + build from this directory
 
 ```bash
-# From the VMAnalytic repository root:
 cd /path/to/vmanalytic
 
-<<<<<<< HEAD
-=======
-podman build -t "${IMAGE}" .
-podman push "${IMAGE}"
-```
-
-OpenShift internal registry (logged in with `oc`):
-
-```bash
-oc new-project vmanalytic   # or: oc project vmanalytic
-HOST=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2>/dev/null || true)
-# Alternative: use ImageStream + build in-cluster (see below)
-podman build -t image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest .
-# Prefer pushing via an exposed registry route or an external registry your cluster trusts
-```
-
-In-cluster build from the Git repo (no local push required):
-
->>>>>>> 9502968a6a2f17f96db2e8584ac1dcc0ef468922
 oc new-project vmanalytic
-# or reuse an existing project:
-# oc project vmanalytic
+# or: oc project vmanalytic
 
-# Create a Docker strategy BuildConfig + ImageStream, then upload this directory
 oc new-build --name=vmanalytic --binary --strategy=docker
 oc start-build vmanalytic --from-dir=. --follow
-<<<<<<< HEAD
 ```
 
-`--from-dir=.` sends the current directory (source + `Dockerfile`) to OpenShift; the cluster builds the image into ImageStream `vmanalytic:latest` in the project. No external registry push is required.
+`--from-dir=.` uploads the current directory; OpenShift builds into ImageStream `vmanalytic:latest`. No external registry push needed.
 
 Rebuild later from the same directory:
 
 ```bash
 oc start-build vmanalytic --from-dir=. --follow
 ```
-=======
 
->>>>>>> 9502968a6a2f17f96db2e8584ac1dcc0ef468922
-
-### 2. Create the Flask secret
+### 2. Secret
 
 ```bash
 oc -n vmanalytic create secret generic vmanalytic-secrets \
@@ -204,7 +165,7 @@ oc -n vmanalytic create secret generic vmanalytic-secrets \
   --dry-run=client -o yaml | oc apply -f -
 ```
 
-### 3. Deploy from the ImageStream built above
+### 3. Deploy
 
 ```bash
 oc apply -k k8s/
@@ -213,25 +174,28 @@ oc -n vmanalytic set image deployment/vmanalytic \
 oc -n vmanalytic rollout status deployment/vmanalytic
 ```
 
-If the Deployment was applied before the first successful build, wait for the build to finish, then run `set image` / `rollout` again.
+If the Deployment was applied before the first successful build, wait for the build, then run `set image` / `rollout` again.
 
-Optional persistent uploads (edit `k8s/pvc.yaml` storage class, then wire the PVC into the Deployment as described in that file):
+Optional PVC (edit storage class in `k8s/pvc.yaml`, then wire volumes as documented there):
 
 ```bash
 oc apply -f k8s/pvc.yaml
 ```
 
-### 4. Expose the app (Route)
+### 4. Route
 
 ```bash
 oc -n vmanalytic expose service/vmanalytic --name=vmanalytic
-# Or with a fixed host:
-# oc -n vmanalytic create route edge vmanalytic --service=vmanalytic --hostname=vmanalytic.apps.example.com
-
 oc -n vmanalytic get route vmanalytic
 ```
 
-If your cluster uses Ingress instead, uncomment `ingress.yaml` in `k8s/kustomization.yaml`, set `host` / `ingressClassName`, then `oc apply -k k8s/`.
+Fixed host (example):
+
+```bash
+oc -n vmanalytic create route edge vmanalytic \
+  --service=vmanalytic \
+  --hostname=vmanalytic.apps.example.com
+```
 
 ### 5. Verify
 
@@ -240,27 +204,39 @@ oc -n vmanalytic get pods,svc,route,build,imagestream
 oc -n vmanalytic logs -f deploy/vmanalytic
 ```
 
-Open the Route URL from `oc get route`. Analysis jobs can run for several minutes; the container Gunicorn timeout is 600 seconds.
+Analysis can take several minutes; container Gunicorn timeout is **600s**.
 
 ---
 
-## Recommended Environment Variables
+## Environment variables
 
-- `FLASK_SECRET_KEY` (required for production)
-- `HOST` (default `127.0.0.1`)
-- `PORT` (default `5000`)
-- `VMANALYTIC_ROOT` (optional custom app data root)
-- `OIC_STATIC_ROOT` (optional path to o-i-creator static export for `/oic/`)
+| Variable | Purpose |
+|----------|---------|
+| `FLASK_SECRET_KEY` | **Required** in production (sessions / flash) |
+| `HOST` / `PORT` | Listen address for local Waitress/Flask helpers |
+| `VMANALYTIC_ROOT` | Custom writable data root |
+| `OIC_STATIC_ROOT` | Directory with o-i-creator static files for `/oic/` |
+
+---
+
+## Project layout (short)
+
+```
+web/              Flask UI (templates, static, i18n)
+vm_analysis/      Import, vCenter collect, analysis pipeline
+helper_files/     OS / ignore pattern defaults
+k8s/              OpenShift / Kubernetes manifests
+Dockerfile        Container image (Gunicorn)
+```
 
 ---
 
 ## Notes
 
-- The embedded OpenShift helper is served from `/oic/` when `OIC_STATIC_ROOT` points at a directory that contains `index.html` (and assets). In containers, mount that export and set the env var (see Podman example above).
-- If that directory is missing, the OpenShift tab will not load.
+- Prefer a strong `FLASK_SECRET_KEY` and network access control; the UI has no built-in login.
+- Upload sessions are stored under `data/uploads/` (or the mounted volume in containers).
+- Without `OIC_STATIC_ROOT` (or a valid mount), the OpenShift helper tab returns 404 for `/oic/`.
 
 ---
-
-## Copyright
 
 Copyright (c) 2026 VMAnalytic contributors.
