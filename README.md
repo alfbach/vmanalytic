@@ -156,6 +156,25 @@ Manifests live under [`k8s/`](k8s/).
 # From the VMAnalytic repository root:
 cd /path/to/vmanalytic
 
+<<<<<<< HEAD
+=======
+podman build -t "${IMAGE}" .
+podman push "${IMAGE}"
+```
+
+OpenShift internal registry (logged in with `oc`):
+
+```bash
+oc new-project vmanalytic   # or: oc project vmanalytic
+HOST=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2>/dev/null || true)
+# Alternative: use ImageStream + build in-cluster (see below)
+podman build -t image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest .
+# Prefer pushing via an exposed registry route or an external registry your cluster trusts
+```
+
+In-cluster build from the Git repo (no local push required):
+
+>>>>>>> 9502968a6a2f17f96db2e8584ac1dcc0ef468922
 oc new-project vmanalytic
 # or reuse an existing project:
 # oc project vmanalytic
@@ -163,6 +182,7 @@ oc new-project vmanalytic
 # Create a Docker strategy BuildConfig + ImageStream, then upload this directory
 oc new-build --name=vmanalytic --binary --strategy=docker
 oc start-build vmanalytic --from-dir=. --follow
+<<<<<<< HEAD
 ```
 
 `--from-dir=.` sends the current directory (source + `Dockerfile`) to OpenShift; the cluster builds the image into ImageStream `vmanalytic:latest` in the project. No external registry push is required.
@@ -172,6 +192,9 @@ Rebuild later from the same directory:
 ```bash
 oc start-build vmanalytic --from-dir=. --follow
 ```
+=======
+
+>>>>>>> 9502968a6a2f17f96db2e8584ac1dcc0ef468922
 
 ### 2. Create the Flask secret
 
