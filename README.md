@@ -101,6 +101,147 @@ docker run --rm -p 5000:5000 \
 
 Then open [http://localhost:5000](http://localhost:5000).
 
+### Option D: Podman
+
+Build the image from the project root (uses the included `Dockerfile`):
+
+```bash
+podman build -t vmanalytic:latest .
+```
+
+Run a local prototype container:
+
+```bash
+podman run --rm -p 5050:5000 \
+  -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
+  --name vmanalytic \
+  vmanalytic:latest
+```
+
+Open [http://127.0.0.1:5050](http://127.0.0.1:5050).
+
+Optional: persist upload sessions and mount an OpenShift install-config helper static export:
+
+```bash
+mkdir -p ./data/uploads ./saved_csv_files
+podman run --rm -p 5050:5000 \
+  -e FLASK_SECRET_KEY="$(openssl rand -hex 32)" \
+  -e OIC_STATIC_ROOT=/app/oic-static \
+  -v "$(pwd)/data:/app/data:Z" \
+  -v "$(pwd)/saved_csv_files:/app/saved_csv_files:Z" \
+  -v "/path/to/o-i-creator/static:/app/oic-static:ro,Z" \
+  --name vmanalytic \
+  vmanalytic:latest
+```
+
+Stop the container:
+
+```bash
+podman stop vmanalytic
+```
+
+Notes for Podman on macOS: start the machine first if needed (`podman machine start`). The `:Z` volume options help with SELinux labels on Linux; they are harmless elsewhere.
+
+---
+
+## Deploy on OpenShift
+
+Manifests live under [`k8s/`](k8s/). They work with `oc` (OpenShift CLI) the same way as with `kubectl`.
+
+### 1. Build and push the image
+
+Pick a registry your cluster can pull from (Quay, OpenShift internal registry, etc.):
+
+```bash
+# Example: Quay
+export REGISTRY=quay.io/<org>
+export IMAGE=${REGISTRY}/vmanalytic:latest
+
+podman build -t "${IMAGE}" .
+podman push "${IMAGE}"
+```
+
+OpenShift internal registry (logged in with `oc`):
+
+```bash
+oc new-project vmanalytic   # or: oc project vmanalytic
+HOST=$(oc get route default-route -n openshift-image-registry -o jsonpath='{.spec.host}' 2>/dev/null || true)
+# Alternative: use ImageStream + build in-cluster (see below)
+podman build -t image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest .
+# Prefer pushing via an exposed registry route or an external registry your cluster trusts
+```
+
+In-cluster build from the Git repo (no local push required):
+
+```bash
+oc new-project vmanalytic
+oc new-build --name=vmanalytic --binary --strategy=docker
+oc start-build vmanalytic --from-dir=. --follow
+# Image lands in ImageStream vmanalytic in the project
+```
+
+### 2. Create the Flask secret
+
+```bash
+oc apply -f k8s/namespace.yaml
+oc -n vmanalytic create secret generic vmanalytic-secrets \
+  --from-literal=flask-secret-key="$(openssl rand -hex 32)" \
+  --dry-run=client -o yaml | oc apply -f -
+```
+
+### 3. Point the Deployment at your image
+
+Edit `k8s/deployment.yaml` (or set the image after apply):
+
+```bash
+# After applying manifests, set the image you pushed / built:
+oc -n vmanalytic set image deployment/vmanalytic \
+  app=IMAGE_REF_HERE
+
+# Examples:
+#   app=quay.io/<org>/vmanalytic:latest
+#   app=image-registry.openshift-image-registry.svc:5000/vmanalytic/vmanalytic:latest
+```
+
+### 4. Apply Kubernetes / OpenShift resources
+
+```bash
+oc apply -k k8s/
+# Or individually:
+# oc apply -f k8s/namespace.yaml
+# oc apply -f k8s/deployment.yaml
+# oc apply -f k8s/service.yaml
+```
+
+Optional persistent uploads (edit `k8s/pvc.yaml` storage class, then wire the PVC into the Deployment as described in that file):
+
+```bash
+oc apply -f k8s/pvc.yaml
+```
+
+### 5. Expose the app (Route)
+
+Prefer an OpenShift Route over the sample Ingress:
+
+```bash
+oc -n vmanalytic expose service/vmanalytic --name=vmanalytic
+# Or with a fixed host:
+# oc -n vmanalytic create route edge vmanalytic --service=vmanalytic --hostname=vmanalytic.apps.example.com
+
+oc -n vmanalytic get route vmanalytic
+```
+
+If your cluster uses Ingress instead, uncomment `ingress.yaml` in `k8s/kustomization.yaml`, set `host` / `ingressClassName`, then `oc apply -k k8s/`.
+
+### 6. Verify
+
+```bash
+oc -n vmanalytic get pods,svc,route
+oc -n vmanalytic logs -f deploy/vmanalytic
+```
+
+Open the Route URL from `oc get route`. Analysis jobs can run for several minutes; the container Gunicorn timeout is 600 seconds.
+
 ---
 
 ## Recommended Environment Variables
@@ -109,12 +250,13 @@ Then open [http://localhost:5000](http://localhost:5000).
 - `HOST` (default `127.0.0.1`)
 - `PORT` (default `5000`)
 - `VMANALYTIC_ROOT` (optional custom app data root)
+- `OIC_STATIC_ROOT` (optional path to o-i-creator static export for `/oic/`)
 
 ---
 
 ## Notes
 
-- The embedded OpenShift helper is served from `/oic/` and depends on static files from `/Users/abach/o-i-creator/static`.
+- The embedded OpenShift helper is served from `/oic/` when `OIC_STATIC_ROOT` points at a directory that contains `index.html` (and assets). In containers, mount that export and set the env var (see Podman example above).
 - If that directory is missing, the OpenShift tab will not load.
 
 ---

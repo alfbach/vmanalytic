@@ -1,845 +1,120 @@
 <!DOCTYPE html>
-<html lang="{{ locale }}">
+<html lang="{{ locale }}" class="vma-theme-light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f2f2f7">
+  <meta name="theme-color" content="#f0f0f0" id="meta-theme-color">
   <title>{{ t('page_title') }}</title>
-  <style>
-    /* Light UI — aligned with Apple Human Interface Guidelines (typography, spacing, system colors) */
-    :root {
-      color-scheme: light;
-      --bg-grouped: #f2f2f7;
-      --bg-elevated: #ffffff;
-      --text-primary: #1d1d1f;
-      --text-secondary: rgba(60, 60, 67, 0.72);
-      --text-tertiary: rgba(60, 60, 67, 0.48);
-      --separator: rgba(60, 60, 67, 0.12);
-      --border: #d1d1d6;
-      --fill-quaternary: #e5e5ea;
-      --accent: #007aff;
-      --accent-hover: #0066d6;
-      --success: #34c759;
-      --warn: #ff9500;
-      --err: #ff3b30;
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.06);
-      --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.08);
-      --radius-lg: 12px;
-      --radius-md: 10px;
-      --radius-sm: 8px;
-      /* map legacy var names */
-      --bg: var(--bg-grouped);
-      --panel: var(--bg-elevated);
-      --text: var(--text-primary);
-      --muted: var(--text-secondary);
-      --tab-inactive: var(--fill-quaternary);
-    }
-    * { box-sizing: border-box; }
-    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg-grouped);
-      color: var(--text-primary);
-      margin: 0;
-      padding: 1rem;
-      min-height: 100vh;
-      line-height: 1.47059;
-      letter-spacing: -0.022em;
-    }
-    /* App shell: blue frame (system blue) */
-    .wrap {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 1.5rem 1.25rem 2.5rem;
-      border: 3px solid var(--accent);
-      border-radius: var(--radius-lg);
-      background: var(--bg-elevated);
-      box-shadow: var(--shadow-sm);
-    }
-    .app-header {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .app-logo {
-      width: 56px;
-      height: 56px;
-      object-fit: contain;
-      flex-shrink: 0;
-      display: block;
-      margin: 0;
-    }
-    .app-header-main {
-      min-width: 0;
-      flex: 1;
-    }
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-      margin: 0 0 0.35rem;
-      color: var(--text-primary);
-    }
-    .app-header-main h1 { margin-top: 0; }
-    p.lead { color: var(--text-secondary); margin: 0 0 1.5rem; font-size: 1.0625rem; line-height: 1.5; }
-    .app-header-main p.lead { margin-bottom: 0; }
-    code {
-      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-      font-size: 0.9em;
-      background: var(--fill-quaternary);
-      color: var(--text-primary);
-      padding: 0.15em 0.4em;
-      border-radius: 4px;
-      font-weight: 500;
-    }
-
-    /* Tab bar — segmented, card-style content below */
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-bottom: 0;
-      padding: 0.25rem;
-      background: var(--fill-quaternary);
-      border-radius: var(--radius-md);
-      border: none;
-    }
-    .tab-btn {
-      margin: 0;
-      padding: 0.5rem 0.95rem;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 0.8125rem;
-      cursor: pointer;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .tab-btn:hover { color: var(--text-primary); background: rgba(255, 255, 255, 0.55); }
-    .tab-btn.active {
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      box-shadow: var(--shadow-sm);
-    }
-    .tab-btn:disabled {
-      opacity: 0.38;
-      cursor: not-allowed;
-    }
-
-    .tab-panel {
-      display: none;
-      background: var(--bg-elevated);
-      border: none;
-      border-radius: var(--radius-lg);
-      padding: 1.25rem 1.35rem;
-      margin-bottom: 1rem;
-      margin-top: 0.75rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .tab-panel.active { display: block; }
-    .tab-panel.flat-top { border-top-left-radius: var(--radius-lg); }
-
-    .panel-inner h2 {
-      font-size: 1.0625rem;
-      margin: 0 0 0.75rem;
-      color: var(--text-primary);
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    label { display: block; font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 0.35rem; }
-    input[type="text"], input[type="number"], input[type="password"], input[type="file"] {
-      width: 100%;
-      max-width: 480px;
-      padding: 0.65rem 0.85rem;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
-    input[type="text"]:focus, input[type="number"]:focus, input[type="password"]:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
-    }
-    input[type="file"] { padding: 0.5rem; }
-    button[type="submit"] {
-      margin-top: 0.85rem;
-      padding: 0.65rem 1.25rem;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      font-size: 0.9375rem;
-      cursor: pointer;
-      letter-spacing: -0.01em;
-      transition: background 0.15s ease;
-    }
-    button[type="submit"]:hover { background: var(--accent-hover); }
-    .hint { font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.4rem; line-height: 1.4; }
-    pre.log {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-size: 0.8125rem;
-      background: #fafafa;
-      padding: 1rem;
-      border-radius: var(--radius-sm);
-      max-height: min(480px, 55vh);
-      overflow: auto;
-      border: 1px solid var(--separator);
-      color: var(--text-primary);
-    }
-    .err { color: var(--err); font-size: 0.875rem; white-space: pre-wrap; }
-    .chart-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .chart-toolbar label.chart-select-label {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin: 0;
-      font-weight: 500;
-    }
-    select.chart-select {
-      min-width: 220px;
-      max-width: 100%;
-      padding: 0.55rem 0.85rem;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      font-size: 0.9375rem;
-      cursor: pointer;
-    }
-    select.chart-select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.25);
-    }
-    .chart-stage {
-      position: relative;
-      min-height: 120px;
-    }
-    .chart-slide {
-      display: none;
-    }
-    .chart-slide.is-active {
-      display: block;
-    }
-    .chart-slide img {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--separator);
-      background: #fafafa;
-      vertical-align: middle;
-    }
-    table.table-sm { font-size: 0.8125rem; width: 100%; border-collapse: collapse; }
-    table.table-sm th, table.table-sm td { border: 1px solid var(--separator); padding: 0.5rem 0.65rem; }
-    table.table-sm th { background: #f5f5f7; color: var(--text-secondary); font-weight: 600; text-align: left; }
-    table.table-sm td { background: var(--bg-elevated); }
-    .badge-ok { color: var(--success); font-weight: 600; }
-    .badge-fail { color: var(--err); font-weight: 600; }
-    .table-block { overflow-x: auto; margin: 1rem 0; }
-    .flash { padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 0.75rem; font-size: 0.9375rem; border: 1px solid transparent; }
-    .flash.error { background: rgba(255, 59, 48, 0.08); border-color: rgba(255, 59, 48, 0.25); color: #c41e16; }
-    .flash.warning { background: rgba(255, 149, 0, 0.1); border-color: rgba(255, 149, 0, 0.35); color: #b35a00; }
-    .check { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
-    .check input { width: auto; accent-color: var(--accent); }
-    .empty-state {
-      color: var(--text-secondary);
-      font-size: 0.9375rem;
-      padding: 2rem 1rem;
-      text-align: center;
-    }
-    .stat-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem 1.25rem;
-      margin: 0.75rem 0 1rem;
-      font-size: 0.9375rem;
-    }
-    .stat-row span { color: var(--text-secondary); }
-    .stat-row strong { color: var(--text-primary); font-weight: 600; }
-
-    /* Project plan proposal tab */
-    .plan-intro {
-      font-size: 0.9375rem;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      margin: 0 0 1.25rem;
-    }
-    .plan-table-wrap { overflow-x: auto; margin: 0.75rem 0 1.25rem; }
-    table.plan-phases {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.8125rem;
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-    }
-    table.plan-phases th,
-    table.plan-phases td {
-      padding: 0.65rem 0.75rem;
-      text-align: left;
-      vertical-align: top;
-      border-bottom: 1px solid var(--separator);
-    }
-    table.plan-phases th {
-      background: var(--fill-quaternary);
-      color: var(--text-primary);
-      font-weight: 600;
-    }
-    table.plan-phases tr:last-child td { border-bottom: none; }
-    table.plan-phases td:first-child { font-weight: 600; white-space: nowrap; color: var(--text-primary); }
-    .plan-milestones {
-      margin: 0;
-      padding-left: 1.15rem;
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      line-height: 1.55;
-    }
-    .plan-milestones li { margin-bottom: 0.35rem; }
-    .plan-note {
-      margin-top: 1.25rem;
-      padding: 0.85rem 1rem;
-      border-radius: var(--radius-sm);
-      background: rgba(0, 122, 255, 0.06);
-      border: 1px solid rgba(0, 122, 255, 0.2);
-      font-size: 0.8125rem;
-      color: var(--text-secondary);
-      line-height: 1.45;
-    }
-    .plan-note strong { color: var(--text-primary); }
-    .oic-frame-wrap {
-      margin-top: 0.9rem;
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: #fff;
-    }
-    .oic-frame {
-      width: 100%;
-      min-height: min(980px, 82vh);
-      border: none;
-      display: block;
-      background: #fff;
-    }
-
-    /* Risk tab: overall score */
-    .risk-hero {
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-lg);
-      padding: 1.35rem 1.5rem;
-      margin-bottom: 1.25rem;
-      background: var(--bg-elevated);
-      box-shadow: var(--shadow-sm);
-    }
-    .risk-hero h2 { font-size: 1.0625rem; margin: 0 0 0.85rem; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; }
-    .risk-score-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.75rem 1.25rem;
-      margin-bottom: 0.65rem;
-    }
-    .risk-score-number {
-      font-size: 2.45rem;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.03em;
-    }
-    .risk-score-number.sev-high { color: var(--err); }
-    .risk-score-number.sev-medium { color: var(--warn); }
-    .risk-score-number.sev-low { color: var(--success); }
-    .risk-score-meta { color: var(--muted); font-size: 0.92rem; }
-    .risk-hero .risk-explainer {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin: 0 0 0.85rem;
-      line-height: 1.45;
-    }
-    .risk-mini-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.65rem 1.35rem;
-      font-size: 0.86rem;
-      color: var(--muted);
-    }
-    .risk-mini-stats strong { color: var(--text); font-weight: 600; }
-
-    .os-discovered-panel {
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-lg);
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.25rem;
-      background: var(--bg-elevated);
-      box-shadow: var(--shadow-sm);
-    }
-    .os-discovered-heading {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 0 0 0.35rem;
-      color: var(--text);
-    }
-    .os-scope-hint {
-      display: block;
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-bottom: 0.85rem;
-      line-height: 1.4;
-    }
-    .os-scope-toggle {
-      display: inline-flex;
-      margin-bottom: 0.75rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .os-scope-btn {
-      padding: 0.45rem 1rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      background: var(--tab-inactive);
-      color: var(--muted);
-    }
-    .os-scope-btn.active {
-      background: var(--accent);
-      color: #fff;
-    }
-    .os-scope-btn:hover:not(.active) {
-      color: var(--text);
-    }
-    .os-scope-panel[hidden] {
-      display: none !important;
-    }
-    .os-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      max-height: min(320px, 42vh);
-      overflow-y: auto;
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-sm);
-      background: #fafafa;
-    }
-    .os-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.45rem 0.7rem;
-      border-bottom: 1px solid var(--separator);
-      font-size: 0.86rem;
-    }
-    .os-list li:last-child { border-bottom: none; }
-    .os-list li.os-list-empty-row {
-      justify-content: center;
-      border-bottom: none;
-    }
-    .os-list .os-name { color: var(--text); word-break: break-word; flex: 1; min-width: 0; }
-    .os-list .os-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-      flex-shrink: 0;
-    }
-    .os-list .os-count {
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
-      font-size: 0.82rem;
-    }
-    .os-move-btn {
-      padding: 0.28rem 0.55rem;
-      font-size: 0.72rem;
-      font-weight: 600;
-      border-radius: 5px;
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--accent);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .os-move-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent-hover);
-    }
-    .os-override-hint {
-      display: block;
-      font-size: 0.76rem;
-      color: var(--muted);
-      margin: 0 0 0.75rem;
-      line-height: 1.45;
-    }
-    .os-reset-btn {
-      margin-top: 0.75rem;
-      padding: 0.4rem 0.85rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-    }
-    .os-reset-btn:hover {
-      color: var(--text);
-      border-color: var(--muted);
-    }
-    .os-recalc-risk-btn {
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      cursor: pointer;
-    }
-    .os-recalc-risk-btn:hover {
-      background: var(--accent-hover);
-    }
-    .os-list-empty {
-      margin: 0;
-      padding: 0.75rem 0.7rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .duration-fte-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.65rem 1rem;
-      margin-bottom: 1rem;
-      padding: 0.85rem 1rem;
-      border: 1px solid var(--separator);
-      border-radius: var(--radius-md);
-      background: var(--bg-elevated);
-      box-shadow: var(--shadow-sm);
-    }
-    .duration-fte-toolbar label {
-      font-size: 0.88rem;
-      color: var(--text);
-      font-weight: 600;
-      margin: 0;
-    }
-    .duration-fte-input {
-      width: 5.5rem;
-      padding: 0.45rem 0.6rem;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-elevated);
-      color: var(--text-primary);
-      font-size: 0.95rem;
-    }
-    .duration-recalc-wrap h3 {
-      font-size: 0.95rem;
-      margin: 1rem 0 0.5rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .duration-recalc-wrap h3:first-child {
-      margin-top: 0;
-    }
-    .env-include-cell {
-      text-align: center;
-      white-space: nowrap;
-    }
-    .env-include-cell label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.78rem;
-      color: var(--muted);
-      cursor: pointer;
-      margin: 0;
-      font-weight: 500;
-    }
-    .env-include-cell input {
-      width: auto;
-      cursor: pointer;
-      accent-color: var(--accent);
-    }
-
-    /* Import: “thinking” overlay while analysis runs */
-    body.import-processing { overflow: hidden; }
-    .import-thinking-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.32);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.35s ease, visibility 0.35s;
-    }
-    .import-thinking-overlay.is-visible {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-    .thinking-card {
-      text-align: center;
-      padding: 2rem 2.5rem;
-      max-width: 440px;
-      margin: 1rem;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--separator);
-      background: var(--bg-elevated);
-      box-shadow: var(--shadow-md);
-    }
-    .thinking-visual {
-      position: relative;
-      height: 96px;
-      margin-bottom: 1.35rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .thinking-pulse-ring {
-      position: absolute;
-      width: 76px;
-      height: 76px;
-      border: 2px solid var(--accent);
-      border-radius: 50%;
-      opacity: 0.4;
-      animation: thinking-pulse 2.1s ease-out infinite;
-    }
-    .thinking-pulse-ring:nth-child(2) { animation-delay: 0.7s; }
-    .thinking-pulse-ring:nth-child(3) { animation-delay: 1.4s; }
-    @keyframes thinking-pulse {
-      0% { transform: scale(0.55); opacity: 0.55; }
-      100% { transform: scale(1.45); opacity: 0; }
-    }
-    .thinking-dots {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      z-index: 1;
-    }
-    .thinking-dots span {
-      width: 11px;
-      height: 11px;
-      background: var(--accent);
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0, 122, 255, 0.35);
-      animation: thinking-bounce 1.1s ease-in-out infinite;
-    }
-    .thinking-dots span:nth-child(1) { animation-delay: 0s; }
-    .thinking-dots span:nth-child(2) { animation-delay: 0.14s; }
-    .thinking-dots span:nth-child(3) { animation-delay: 0.28s; }
-    .thinking-dots span:nth-child(4) { animation-delay: 0.42s; }
-    .thinking-dots span:nth-child(5) { animation-delay: 0.56s; }
-    @keyframes thinking-bounce {
-      0%, 70%, 100% { transform: translateY(0); opacity: 0.45; }
-      35% { transform: translateY(-16px); opacity: 1; }
-    }
-    .thinking-status {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--text);
-      margin: 0 0 0.5rem;
-      min-height: 1.5em;
-      transition: opacity 0.25s ease;
-    }
-    .thinking-hint {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin: 0;
-      line-height: 1.45;
-    }
-
-    /* Language switcher */
-    .lang-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.45rem 0.65rem;
-      margin-bottom: 1rem;
-      padding: 0.55rem 0.85rem;
-      background: var(--fill-quaternary);
-      border-radius: var(--radius-md);
-      font-size: 0.8125rem;
-    }
-    .lang-bar-label {
-      color: var(--text-secondary);
-      font-weight: 600;
-      margin-right: 0.15rem;
-    }
-    a.lang-chip {
-      text-decoration: none;
-      padding: 0.28rem 0.65rem;
-      border-radius: 999px;
-      color: var(--text-secondary);
-      border: 1px solid transparent;
-      font-weight: 500;
-      transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-    }
-    a.lang-chip:hover {
-      color: var(--text-primary);
-      background: rgba(255, 255, 255, 0.65);
-      border-color: var(--border);
-    }
-    a.lang-chip.is-active {
-      color: #fff;
-      background: var(--accent);
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-
-    /* Balloon help (? chip) */
-    .help-wrap {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      vertical-align: middle;
-      margin-left: 0.3rem;
-    }
-    .h1-row, .label-row {
-      display: inline-flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.15rem;
-    }
-    .help-btn {
-      width: 1.2rem;
-      height: 1.2rem;
-      padding: 0;
-      border: none;
-      border-radius: 50%;
-      background: var(--fill-quaternary);
-      color: var(--accent);
-      font-size: 0.65rem;
-      font-weight: 800;
-      line-height: 1;
-      cursor: help;
-      flex-shrink: 0;
-      box-shadow: 0 0 0 1px var(--border);
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .help-btn:hover, .help-btn:focus-visible {
-      background: var(--accent);
-      color: #fff;
-      outline: none;
-    }
-    .help-balloon {
-      display: none;
-      position: absolute;
-      z-index: 200;
-      left: 50%;
-      transform: translateX(-50%);
-      top: calc(100% + 8px);
-      min-width: 220px;
-      max-width: min(340px, 92vw);
-      padding: 0.65rem 0.75rem;
-      font-size: 0.78rem;
-      font-weight: 400;
-      line-height: 1.45;
-      color: var(--text-primary);
-      background: var(--bg-elevated);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-md);
-      text-align: left;
-    }
-    .help-balloon::before {
-      content: "";
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      margin-left: -6px;
-      border: 6px solid transparent;
-      border-bottom-color: var(--border);
-    }
-    .help-wrap.is-open .help-balloon,
-    .help-wrap:hover .help-balloon {
-      display: block;
-    }
-    @media (hover: none) {
-      .help-wrap:hover .help-balloon { display: none; }
-      .help-wrap.is-open .help-balloon { display: block; }
-    }
-  </style>
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("vma-theme");
+        if (t !== "dark" && t !== "light") {
+          t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        var root = document.documentElement;
+        root.classList.remove("pf-v5-theme-dark", "vma-theme-light");
+        if (t === "dark") {
+          root.classList.add("pf-v5-theme-dark");
+          var m = document.getElementById("meta-theme-color");
+          if (m) m.setAttribute("content", "#0a0a0a");
+        } else {
+          root.classList.add("vma-theme-light");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@5.4.2/patternfly.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@patternfly/patternfly@5.4.2/patternfly-addons.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/vmanalytic-pf-theme.css') }}">
 </head>
 <body data-initial-tab="projectplan" data-locale="{{ locale }}">
   <script type="application/json" id="i18n-bootstrap">{{ {"locale": locale, "strings": i18n_js, "help": i18n_help} | tojson }}</script>
-  <div class="wrap">
-    <div class="lang-bar" role="navigation" aria-label="{{ t('lang_bar_label') }}">
-      <span class="lang-bar-label">{{ t('lang_bar_label') }}</span>
-      {% for code in ['en', 'de', 'fr', 'es'] %}
-        <a href="{{ url_for('set_lang', locale=code, next=request.full_path) }}" class="lang-chip{% if locale == code %} is-active{% endif %}" hreflang="{{ code }}">{{ lang_native[code] }}</a>
-      {% endfor %}
-      <span class="help-wrap" data-help-wrap>
-        <button type="button" class="help-btn" data-help="nav_tabs" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
-        <span class="help-balloon" role="tooltip">{{ i18n_help['nav_tabs'] }}</span>
-      </span>
-    </div>
-
-    <header class="app-header">
-      <img
-        class="app-logo"
-        src="{{ url_for('static', filename='vmanalytic-logo.png') }}"
-        width="56"
-        height="56"
-        alt="{{ t('meta_app') }}"
-      />
-      <div class="app-header-main">
-        <div class="h1-row">
-          <h1>{{ t('h1') }}</h1>
+  <div class="pf-v5-c-page" id="vma-page">
+    <header class="pf-v5-c-masthead" role="banner">
+      <div class="pf-v5-c-masthead__main">
+        <span class="pf-v5-c-masthead__brand">
+          <div class="vma-brand">
+            <img
+              src="{{ url_for('static', filename='vmanalytic-logo.png') }}"
+              width="40"
+              height="40"
+              alt="{{ t('meta_app') }}"
+            />
+            <span class="vma-brand-title">{{ t('h1') }}</span>
+            <span class="help-wrap" data-help-wrap>
+              <button type="button" class="help-btn" data-help="header_lead" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+              <span class="help-balloon" role="tooltip">{{ i18n_help['header_lead'] }}</span>
+            </span>
+          </div>
+        </span>
+      </div>
+      <div class="pf-v5-c-masthead__content">
+        <div class="vma-lang-bar" role="navigation" aria-label="{{ t('lang_bar_label') }}">
+          <span class="lang-bar-label">{{ t('lang_bar_label') }}</span>
+          {% for code in ['en', 'de', 'fr', 'es'] %}
+            <a href="{{ url_for('set_lang', locale=code, next=request.full_path) }}" class="lang-chip{% if locale == code %} is-active{% endif %}" hreflang="{{ code }}">{{ lang_native[code] }}</a>
+          {% endfor %}
+          <div class="vma-theme-bar" role="group" aria-label="{{ t('theme_bar_label') }}">
+            <span class="lang-bar-label">{{ t('theme_bar_label') }}</span>
+            <button type="button" class="vma-theme-btn" data-theme="light" id="theme-btn-light" aria-pressed="false">{{ t('theme_light') }}</button>
+            <button type="button" class="vma-theme-btn" data-theme="dark" id="theme-btn-dark" aria-pressed="false">{{ t('theme_dark') }}</button>
+          </div>
           <span class="help-wrap" data-help-wrap>
-            <button type="button" class="help-btn" data-help="header_lead" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
-            <span class="help-balloon" role="tooltip">{{ i18n_help['header_lead'] }}</span>
+            <button type="button" class="help-btn" data-help="nav_tabs" aria-label="{{ t('help_btn_aria') }}" aria-expanded="false">?</button>
+            <span class="help-balloon" role="tooltip">{{ i18n_help['nav_tabs'] }}</span>
           </span>
         </div>
-        <p class="lead">{{ t('lead') | safe }}</p>
       </div>
     </header>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <main class="pf-v5-c-page__main" tabindex="-1" id="main-content">
+      <section class="pf-v5-c-page__main-section pf-m-limit-width">
+        <div class="pf-v5-c-page__main-body vma-page-body">
+          <p class="vma-lead">{{ t('lead') | safe }}</p>
 
-    <nav class="tabs" role="tablist" aria-label="{{ t('nav_main_aria') }}">
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="projectplan" id="tab-btn-projectplan" title="{{ t('tab_projectplan_title') }}">{{ t('nav_projectplan') }}</button>
-      <button type="button" class="tab-btn{% if result is none %} active{% endif %}" role="tab" aria-selected="{% if result is none %}true{% else %}false{% endif %}" data-tab="import" id="tab-btn-import">{{ t('nav_import') }}</button>
-      <button type="button" class="tab-btn{% if result is not none %} active{% endif %}" role="tab" aria-selected="{% if result is not none %}true{% else %}false{% endif %}" data-tab="overview" id="tab-btn-overview"
-        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_overview') }}</button>
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="risk" id="tab-btn-risk"
-        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_risk') }}</button>
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="duration" id="tab-btn-duration"
-        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_duration') }}</button>
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="graphics" id="tab-btn-graphics"
-        {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}>{{ t('nav_graphics') }}</button>
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" data-tab="oic" id="tab-btn-oic">{{ t('nav_oic') }}</button>
-    </nav>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="pf-v5-c-alert pf-m-{% if category == 'error' %}danger{% elif category == 'warning' %}warning{% else %}info{% endif %} pf-m-inline" style="margin-bottom:0.75rem;" role="alert">
+                  <div class="pf-v5-c-alert__title">{{ message }}</div>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
 
-    <!-- Import -->
-    <section class="tab-panel flat-top{% if result is none %} active{% endif %}" data-panel="import" id="panel-import" role="tabpanel" aria-labelledby="tab-btn-import">
+          <div class="tabs pf-v5-c-tabs pf-m-fill" role="region" aria-label="{{ t('nav_main_aria') }}">
+            <ul class="pf-v5-c-tabs__list" role="tablist">
+              <li class="pf-v5-c-tabs__item">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link" role="tab" aria-selected="false" data-tab="projectplan" id="tab-btn-projectplan" title="{{ t('tab_projectplan_title') }}"><span class="pf-v5-c-tabs__item-text">{{ t('nav_projectplan') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item{% if result is none %} pf-m-current{% endif %}">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link{% if result is none %} active{% endif %}" role="tab" aria-selected="{% if result is none %}true{% else %}false{% endif %}" data-tab="import" id="tab-btn-import"><span class="pf-v5-c-tabs__item-text">{{ t('nav_import') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item{% if result is not none %} pf-m-current{% endif %}">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link{% if result is not none %} active{% endif %}" role="tab" aria-selected="{% if result is not none %}true{% else %}false{% endif %}" data-tab="overview" id="tab-btn-overview"
+                  {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}><span class="pf-v5-c-tabs__item-text">{{ t('nav_overview') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link" role="tab" aria-selected="false" data-tab="risk" id="tab-btn-risk"
+                  {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}><span class="pf-v5-c-tabs__item-text">{{ t('nav_risk') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link" role="tab" aria-selected="false" data-tab="duration" id="tab-btn-duration"
+                  {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}><span class="pf-v5-c-tabs__item-text">{{ t('nav_duration') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link" role="tab" aria-selected="false" data-tab="graphics" id="tab-btn-graphics"
+                  {% if result is none %}disabled title="{{ t('tab_run_first') }}"{% endif %}><span class="pf-v5-c-tabs__item-text">{{ t('nav_graphics') }}</span></button>
+              </li>
+              <li class="pf-v5-c-tabs__item">
+                <button type="button" class="tab-btn pf-v5-c-tabs__link" role="tab" aria-selected="false" data-tab="oic" id="tab-btn-oic"><span class="pf-v5-c-tabs__item-text">{{ t('nav_oic') }}</span></button>
+              </li>
+            </ul>
+          </div>
+
+<!-- Import -->
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded{% if result is none %} active{% endif %}" data-panel="import" id="panel-import" role="tabpanel" aria-labelledby="tab-btn-import">
       <div class="panel-inner">
         <div class="label-row" style="margin-bottom:0.35rem;">
           <h2 style="margin:0;">{{ t('import_upload_h2') }}</h2>
@@ -851,12 +126,12 @@
         <form id="form-upload-import" method="post" enctype="multipart/form-data">
           <input type="hidden" name="import_mode" value="upload">
           <label for="rvtools_files">{{ t('label_rvtools_files') }}</label>
-          <input type="file" id="rvtools_files" name="rvtools_files" accept=".xlsx,.xls" multiple>
+          <input type="file" id="rvtools_files" name="rvtools_files" class="pf-v5-c-form-control" accept=".xlsx,.xls" multiple>
           <p class="hint">{{ t('hint_rvtools_files') | safe }}</p>
-          <button type="submit">{{ t('btn_run_upload') }}</button>
+          <button type="submit" class="pf-v5-c-button pf-m-primary">{{ t('btn_run_upload') }}</button>
         </form>
       </div>
-      <div class="panel-inner" style="margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border);">
+      <div class="panel-inner" class="vma-import-split">
         <div class="label-row" style="margin-bottom:0.35rem;">
           <h2 style="margin:0;">{{ t('import_vcenter_h2') }}</h2>
           <span class="help-wrap" data-help-wrap>
@@ -867,27 +142,27 @@
         <form id="form-vcenter-import" method="post">
           <input type="hidden" name="import_mode" value="vcenter">
           <label for="vc_host">{{ t('label_vc_host') }}</label>
-          <input type="text" id="vc_host" name="vc_host" placeholder="{{ t('ph_vc_host') }}" autocomplete="off">
+          <input type="text" id="vc_host" class="pf-v5-c-form-control" name="vc_host" placeholder="{{ t('ph_vc_host') }}" autocomplete="off">
           <label for="vc_user" style="margin-top:0.75rem;">{{ t('label_vc_user') }}</label>
-          <input type="text" id="vc_user" name="vc_user" placeholder="administrator@vsphere.local" autocomplete="username">
+          <input type="text" id="vc_user" class="pf-v5-c-form-control" name="vc_user" placeholder="administrator@vsphere.local" autocomplete="username">
           <label for="vc_password" style="margin-top:0.75rem;">{{ t('label_vc_password') }}</label>
-          <input type="password" id="vc_password" name="vc_password" autocomplete="current-password">
+          <input type="password" id="vc_password" class="pf-v5-c-form-control" name="vc_password" autocomplete="current-password">
           <label for="vc_port" style="margin-top:0.75rem;">{{ t('label_vc_port') }}</label>
-          <input type="number" id="vc_port" name="vc_port" value="443" min="1" max="65535">
+          <input type="number" id="vc_port" class="pf-v5-c-form-control" name="vc_port" value="443" min="1" max="65535">
           <label for="vc_label" style="margin-top:0.75rem;">{{ t('label_vc_label') }}</label>
-          <input type="text" id="vc_label" name="vc_label" value="vcenter" placeholder="{{ t('ph_vc_label') }}">
+          <input type="text" id="vc_label" class="pf-v5-c-form-control" name="vc_label" value="vcenter" placeholder="{{ t('ph_vc_label') }}">
           <div class="check">
             <input type="checkbox" id="vc_ssl_skip" name="vc_ssl_skip" value="1" checked>
             <label for="vc_ssl_skip" style="margin:0;">{{ t('label_vc_ssl') }}</label>
           </div>
           <p class="hint">{{ t('hint_vcenter') | safe }}</p>
-          <button type="submit">{{ t('btn_run_vcenter') }}</button>
+          <button type="submit" class="pf-v5-c-button pf-m-primary">{{ t('btn_run_vcenter') }}</button>
         </form>
       </div>
     </section>
 
     <!-- Overview -->
-    <section class="tab-panel flat-top{% if result is not none %} active{% endif %}" data-panel="overview" id="panel-overview" role="tabpanel" aria-labelledby="tab-btn-overview">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded{% if result is not none %} active{% endif %}" data-panel="overview" id="panel-overview" role="tabpanel" aria-labelledby="tab-btn-overview">
       <div class="panel-inner">
         {% if result is none %}
           <p class="empty-state">{{ t('overview_empty') | safe }}</p>
@@ -919,7 +194,7 @@
     </section>
 
     <!-- Risk analysis (tabular outputs: migration complexity, OS, etc.) -->
-    <section class="tab-panel flat-top" data-panel="risk" id="panel-risk" role="tabpanel" aria-labelledby="tab-btn-risk">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded" data-panel="risk" id="panel-risk" role="tabpanel" aria-labelledby="tab-btn-risk">
       <div class="panel-inner">
         {% if result is none %}
           <p class="empty-state">{{ t('risk_empty') | safe }}</p>
@@ -943,14 +218,14 @@
                 {{ t('risk_explainer') | safe }}
               </p>
               <div class="risk-mini-stats">
-                <span>{{ t('risk_stat_vms') }}: <strong>{{ result.risk_summary.vm_count }}</strong></span>
-                <span>{{ t('risk_stat_hosts') }}: <strong>{{ result.risk_summary.host_count }}</strong></span>
-                <span>{{ t('risk_stat_cores') }}: <strong>{{ result.risk_summary.cpu_cores }}</strong></span>
+                <span>{{ t('risk_stat_vms') }}: <strong id="risk-stat-vms">{{ result.risk_summary.vm_count }}</strong></span>
+                <span>{{ t('risk_stat_hosts') }}: <strong id="risk-stat-hosts">{{ result.risk_summary.host_count }}</strong></span>
+                <span>{{ t('risk_stat_cores') }}: <strong id="risk-stat-cores">{{ result.risk_summary.cpu_cores }}</strong></span>
                 <span>{{ t('risk_stat_unsup') }}: <strong id="risk-unsupported-pct">{{ result.risk_summary.unsupported_guest_os_pct }}%</strong></span>
               </div>
             </div>
             <script type="application/json" id="risk-recalc-inputs">{{ { "vm": result.risk_summary.vm_count, "hosts": result.risk_summary.host_count, "cores": result.risk_summary.cpu_cores } | tojson }}</script>
-            <script type="application/json" id="risk-initial-display">{{ { "score": result.risk_summary.score, "label": result.risk_summary.label, "label_i18n": risk_label_i18n(result.risk_summary.label), "unsupported_pct": result.risk_summary.unsupported_guest_os_pct } | tojson }}</script>
+            <script type="application/json" id="risk-initial-display">{{ { "score": result.risk_summary.score, "label": result.risk_summary.label, "label_i18n": risk_label_i18n(result.risk_summary.label), "unsupported_pct": result.risk_summary.unsupported_guest_os_pct, "vm": result.risk_summary.vm_count, "hosts": result.risk_summary.host_count, "cores": result.risk_summary.cpu_cores } | tojson }}</script>
           {% endif %}
           {% if result.discovered_os and (result.discovered_os['in_scope'] or result.discovered_os['out_of_scope']) %}
             <script type="application/json" id="discovered-os-json">{{ result.discovered_os | tojson }}</script>
@@ -966,7 +241,7 @@
               <span class="os-override-hint">{{ t('os_hint_move') | safe }}</span>
               {% if result.risk_summary %}
               <div style="margin-bottom:0.75rem;">
-                <button type="button" class="os-recalc-risk-btn" id="risk-recalc-btn">{{ t('btn_recalc_risk') }}</button>
+                <button type="button" class="os-recalc-risk-btn pf-v5-c-button pf-m-primary" id="risk-recalc-btn">{{ t('btn_recalc_risk') }}</button>
               </div>
               {% endif %}
               <div class="os-scope-toggle" role="tablist" aria-label="{{ t('os_scope_aria') }}">
@@ -979,7 +254,7 @@
               <div class="os-scope-panel" id="os-panel-out" role="tabpanel" aria-labelledby="os-scope-btn-out" hidden>
                 <ul class="os-list" id="os-list-out"></ul>
               </div>
-              <button type="button" class="os-reset-btn" id="os-reset-defaults">{{ t('btn_os_reset') }}</button>
+              <button type="button" class="os-reset-btn pf-v5-c-button pf-m-secondary" id="os-reset-defaults">{{ t('btn_os_reset') }}</button>
             </div>
           {% endif %}
           {% if result.tables %}
@@ -997,7 +272,7 @@
     </section>
 
     <!-- Duration estimate -->
-    <section class="tab-panel flat-top" data-panel="duration" id="panel-duration" role="tabpanel" aria-labelledby="tab-btn-duration">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded" data-panel="duration" id="panel-duration" role="tabpanel" aria-labelledby="tab-btn-duration">
       <div class="panel-inner">
         {% if result is none %}
           <p class="empty-state">{{ t('duration_empty') | safe }}</p>
@@ -1041,7 +316,7 @@
     </section>
 
     <!-- Graphics -->
-    <section class="tab-panel flat-top" data-panel="graphics" id="panel-graphics" role="tabpanel" aria-labelledby="tab-btn-graphics">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded" data-panel="graphics" id="panel-graphics" role="tabpanel" aria-labelledby="tab-btn-graphics">
       <div class="panel-inner">
         {% if result is none %}
           <p class="empty-state">{{ t('graphics_empty') | safe }}</p>
@@ -1076,7 +351,7 @@
     </section>
 
     <!-- OpenShift Install-Config Generator (o-i-creator) -->
-    <section class="tab-panel flat-top" data-panel="oic" id="panel-oic" role="tabpanel" aria-labelledby="tab-btn-oic">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded" data-panel="oic" id="panel-oic" role="tabpanel" aria-labelledby="tab-btn-oic">
       <div class="panel-inner">
         <div class="label-row" style="margin-bottom:0.35rem;">
           <h2 style="margin:0;">{{ t('oic_h2') }}</h2>
@@ -1099,7 +374,7 @@
     </section>
 
     <!-- Project plan proposal (static template) -->
-    <section class="tab-panel flat-top" data-panel="projectplan" id="panel-projectplan" role="tabpanel" aria-labelledby="tab-btn-projectplan">
+    <section class="tab-panel flat-top pf-v5-c-card pf-m-rounded" data-panel="projectplan" id="panel-projectplan" role="tabpanel" aria-labelledby="tab-btn-projectplan">
       <div class="panel-inner">
         <div class="label-row" style="margin-bottom:0.35rem;">
           <h2 style="margin:0;">{{ t('plan_h2') }}</h2>
@@ -1144,9 +419,13 @@
         <p class="plan-note">{{ t('plan_note') | safe }}</p>
       </div>
     </section>
+
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div id="import-thinking-overlay" class="import-thinking-overlay" aria-hidden="true" role="status" aria-live="polite">
+<div id="import-thinking-overlay" class="import-thinking-overlay" aria-hidden="true" role="status" aria-live="polite">
     <div class="thinking-card">
       <div class="thinking-visual" aria-hidden="true">
         <span class="thinking-pulse-ring"></span>
@@ -1170,6 +449,50 @@
       } catch (e1) {}
       window.__I18N = I18N;
 
+      /* Theme: light / dark (PatternFly) */
+      (function () {
+        var KEY = "vma-theme";
+        var meta = document.getElementById("meta-theme-color");
+        var btnLight = document.getElementById("theme-btn-light");
+        var btnDark = document.getElementById("theme-btn-dark");
+
+        function currentTheme() {
+          return document.documentElement.classList.contains("pf-v5-theme-dark") ? "dark" : "light";
+        }
+
+        function applyTheme(theme, persist) {
+          var t = theme === "dark" ? "dark" : "light";
+          var root = document.documentElement;
+          root.classList.remove("pf-v5-theme-dark", "vma-theme-light");
+          if (t === "dark") {
+            root.classList.add("pf-v5-theme-dark");
+            if (meta) meta.setAttribute("content", "#0a0a0a");
+          } else {
+            root.classList.add("vma-theme-light");
+            if (meta) meta.setAttribute("content", "#f0f0f0");
+          }
+          if (btnLight) {
+            btnLight.classList.toggle("is-active", t === "light");
+            btnLight.setAttribute("aria-pressed", t === "light" ? "true" : "false");
+          }
+          if (btnDark) {
+            btnDark.classList.toggle("is-active", t === "dark");
+            btnDark.setAttribute("aria-pressed", t === "dark" ? "true" : "false");
+          }
+          if (persist) {
+            try { localStorage.setItem(KEY, t); } catch (e) {}
+          }
+        }
+
+        applyTheme(currentTheme(), false);
+        if (btnLight) {
+          btnLight.addEventListener("click", function () { applyTheme("light", true); });
+        }
+        if (btnDark) {
+          btnDark.addEventListener("click", function () { applyTheme("dark", true); });
+        }
+      })();
+
       var initial = document.body.getAttribute("data-initial-tab") || "import";
       var buttons = document.querySelectorAll(".tab-btn");
       var panels = document.querySelectorAll(".tab-panel");
@@ -1180,6 +503,8 @@
           var on = b.getAttribute("data-tab") === id;
           b.classList.toggle("active", on);
           b.setAttribute("aria-selected", on ? "true" : "false");
+          var item = b.closest(".pf-v5-c-tabs__item");
+          if (item) item.classList.toggle("pf-m-current", on);
           if (on) foundBtn = true;
         });
         panels.forEach(function (p) {
@@ -1415,6 +740,12 @@
           return Math.max(0, Math.min(1, x));
         }
 
+        function sumVmCount(rows) {
+          var tot = 0;
+          rows.forEach(function (r) { tot += r.vm_count; });
+          return tot;
+        }
+
         function computeUnsupportedPct(rows) {
           var tot = 0;
           var uns = 0;
@@ -1441,6 +772,23 @@
           return { text: S.risk_low || "Low", sev: "low" };
         }
 
+        /** Scale inventory inputs by in-scope OS VM total vs analysis defaults. */
+        function liveInventoryInputs(base) {
+          var vmLive = sumVmCount(state.in_scope);
+          var baseOsVm = sumVmCount(defaults.in_scope);
+          var scale = baseOsVm > 0 ? vmLive / baseOsVm : 1;
+          return {
+            vm: Math.max(0, Math.round((Number(base.vm) || 0) * scale)),
+            hosts: Math.max(0, Math.round((Number(base.hosts) || 0) * scale)),
+            cores: Math.max(0, Math.round((Number(base.cores) || 0) * scale))
+          };
+        }
+
+        function setMiniStat(id, value) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = String(value);
+        }
+
         function restoreRiskFromInitial() {
           var initEl = document.getElementById("risk-initial-display");
           var scoreEl = document.getElementById("risk-score-number");
@@ -1454,6 +802,9 @@
             scoreEl.className = "risk-score-number sev-" + String(init.label).toLowerCase();
             var p0 = init.unsupported_pct;
             pctEl.textContent = (typeof p0 === "number" ? p0.toFixed(2) : String(p0)) + "%";
+            if (init.vm != null) setMiniStat("risk-stat-vms", init.vm);
+            if (init.hosts != null) setMiniStat("risk-stat-hosts", init.hosts);
+            if (init.cores != null) setMiniStat("risk-stat-cores", init.cores);
           } catch (e) {}
         }
 
@@ -1463,7 +814,13 @@
           var labelEl = document.getElementById("risk-score-label-text");
           var pctEl = document.getElementById("risk-unsupported-pct");
           if (!inputsEl || !scoreEl || !labelEl || !pctEl) return;
-          var inputs = JSON.parse(inputsEl.textContent);
+          var base;
+          try {
+            base = JSON.parse(inputsEl.textContent);
+          } catch (e) {
+            return;
+          }
+          var inputs = liveInventoryInputs(base);
           var pct = computeUnsupportedPct(state.in_scope);
           var overall = overallRisk(inputs, pct);
           var info = labelFromScore(overall);
@@ -1471,6 +828,9 @@
           scoreEl.className = "risk-score-number sev-" + info.sev;
           labelEl.textContent = info.text;
           pctEl.textContent = (Math.round(pct * 100) / 100).toFixed(2) + "%";
+          setMiniStat("risk-stat-vms", inputs.vm);
+          setMiniStat("risk-stat-hosts", inputs.hosts);
+          setMiniStat("risk-stat-cores", inputs.cores);
         }
 
         var resetBtn = document.getElementById("os-reset-defaults");

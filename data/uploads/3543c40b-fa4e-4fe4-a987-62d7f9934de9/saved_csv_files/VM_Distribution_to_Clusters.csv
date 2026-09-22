@@ -1,0 +1,6 @@
+Cluster,VM_Count
+Generic_Compute Prod,473
+Generic_Compute non-Prod,279
+Database non-Prod,51
+Database Prod,50
+Management Cluster,7
