@@ -173,12 +173,10 @@ podman build -t image-registry.openshift-image-registry.svc:5000/vmanalytic/vman
 
 In-cluster build from the Git repo (no local push required):
 
-```bash
 oc new-project vmanalytic
 oc new-build --name=vmanalytic --binary --strategy=docker
 oc start-build vmanalytic --from-dir=. --follow
-# Image lands in ImageStream vmanalytic in the project
-```
+
 
 ### 2. Create the Flask secret
 
