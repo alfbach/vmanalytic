@@ -1,0 +1,22 @@
+# OpenShift Route — required for RVTools upload (analysis often > 30s).
+# Default HAProxy timeout is ~30s and returns 504 Gateway Time-out without this annotation.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: vmanalytic
+  namespace: vmanalytic
+  labels:
+    app.kubernetes.io/name: vmanalytic
+  annotations:
+    haproxy.router.openshift.io/timeout: 600s
+spec:
+  to:
+    kind: Service
+    name: vmanalytic
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

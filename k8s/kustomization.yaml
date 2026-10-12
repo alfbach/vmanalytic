@@ -13,7 +13,9 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - service.yaml
-  # Optional: uncomment after editing host / ingressClassName
+  # OpenShift Route with 600s HAProxy timeout (avoids 504 on RVTools upload)
+  - route.yaml
+  # Optional: plain Kubernetes Ingress (nginx) — uncomment after editing host
   # - ingress.yaml
   # Optional: use with PVC + patch deployment volumes (see pvc.yaml)
   # - pvc.yaml

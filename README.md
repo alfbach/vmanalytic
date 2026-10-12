@@ -184,9 +184,14 @@ oc apply -f k8s/pvc.yaml
 
 ### 4. Route
 
+`oc apply -k k8s/` creates [`k8s/route.yaml`](k8s/route.yaml) with a **600s** HAProxy timeout. Without it, OpenShift’s default (~30s) returns **504 Gateway Time-out** while RVTools analysis is still running.
+
+If the Route already exists (e.g. from `oc expose`), set the annotation:
+
 ```bash
-oc -n vmanalytic expose service/vmanalytic --name=vmanalytic
-oc -n vmanalytic get route vmanalytic
+oc -n vmanalytic annotate route vmanalytic --overwrite \
+  haproxy.router.openshift.io/timeout=600s
+oc -n vmanalytic get route vmanalytic -o jsonpath='{.metadata.annotations.haproxy\.router\.openshift\.io/timeout}{"\n"}'
 ```
 
 Fixed host (example):
@@ -194,7 +199,10 @@ Fixed host (example):
 ```bash
 oc -n vmanalytic create route edge vmanalytic \
   --service=vmanalytic \
-  --hostname=vmanalytic.apps.example.com
+  --hostname=vmanalytic.apps.example.com \
+  --dry-run=client -o yaml | oc apply -f -
+oc -n vmanalytic annotate route vmanalytic --overwrite \
+  haproxy.router.openshift.io/timeout=600s
 ```
 
 ### 5. Verify
@@ -204,14 +212,7 @@ oc -n vmanalytic get pods,svc,route,build,imagestream
 oc -n vmanalytic logs -f deploy/vmanalytic
 ```
 
-Analysis can take several minutes; container Gunicorn timeout is **600s**.
-
-For large RVTools uploads, raise the Route / HAProxy timeout to match (e.g. 600s):
-
-```bash
-oc -n vmanalytic annotate route vmanalytic --overwrite \
-  haproxy.router.openshift.io/timeout=600s
-```
+Analysis can take several minutes; Gunicorn and the Route timeout are both **600s**.
 
 The image is OpenShift-ready for arbitrary UIDs (`chgrp 0` + `chmod g=u` on writable paths). Upload sessions go under `/app/data` (`TMPDIR` / `MPLCONFIGDIR` point there).
 
