@@ -74,12 +74,51 @@ elif _frozen():
 else:
     WEB_ROOT = _here.parent
 
+
+def _ensure_writable_runtime_dirs() -> None:
+    """Create upload/temp/cache dirs (needed when emptyDir/PVC replaces image layers)."""
+    for rel in (
+        Path("data") / "uploads",
+        Path("data") / "tmp",
+        Path("data") / ".mplconfig",
+        Path("saved_csv_files"),
+    ):
+        path = WEB_ROOT / rel
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+    tmp = os.environ.get("TMPDIR", "").strip()
+    if tmp:
+        try:
+            Path(tmp).mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+    mpl = os.environ.get("MPLCONFIGDIR", "").strip()
+    if mpl:
+        try:
+            Path(mpl).mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+
+
+_ensure_writable_runtime_dirs()
+
+
 def _oic_static_root() -> Path:
     """Directory with o-i-creator static export (index.html + assets/)."""
     env = (os.environ.get("OIC_STATIC_ROOT") or "").strip()
     if env:
         return Path(env).expanduser().resolve()
-    return Path("/Users/abach/o-i-creator/static")
+    # Prefer container/image default; avoid host-specific paths in Docker/OpenShift.
+    for candidate in (
+        Path("/app/oic-static"),
+        WEB_ROOT / "oic-static",
+        Path.home() / "o-i-creator" / "static",
+    ):
+        if (candidate / "index.html").is_file():
+            return candidate.resolve()
+    return Path("/app/oic-static")
 
 
 OIC_STATIC_ROOT = _oic_static_root()
@@ -357,7 +396,13 @@ def index():
                 try:
                     for f in files:
                         name = secure_filename(f.filename) or "export.xlsx"
-                        if not name.lower().endswith((".xlsx", ".xls")):
+                        if name.lower().endswith(".xls"):
+                            flash(
+                                i18n.translate(g.locale, "flash_skipped_xls", name=name),
+                                "warning",
+                            )
+                            continue
+                        if not name.lower().endswith(".xlsx"):
                             flash(
                                 i18n.translate(g.locale, "flash_skipped_not_excel", name=name),
                                 "warning",

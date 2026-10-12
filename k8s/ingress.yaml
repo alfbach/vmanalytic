@@ -6,6 +6,11 @@ metadata:
   namespace: vmanalytic
   labels:
     app.kubernetes.io/name: vmanalytic
+  annotations:
+    # Match Flask MAX_CONTENT_LENGTH (256 MB) and Gunicorn --timeout 600
+    nginx.ingress.kubernetes.io/proxy-body-size: "256m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
 spec:
   ingressClassName: nginx
   rules:

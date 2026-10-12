@@ -15,6 +15,12 @@ spec:
       labels:
         app.kubernetes.io/name: vmanalytic
     spec:
+      # OpenShift SCC / restricted-v2: do not set runAsUser / fsGroup here —
+      # the platform injects an arbitrary UID and an allowed fsGroup from the project range.
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: app
           # Build: docker build -t <registry>/vmanalytic:<tag> .
@@ -30,6 +36,19 @@ spec:
                 secretKeyRef:
                   name: vmanalytic-secrets
                   key: flask-secret-key
+            - name: TMPDIR
+              value: /app/data/tmp
+            - name: MPLCONFIGDIR
+              value: /app/data/.mplconfig
+            - name: HOME
+              value: /tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
           volumeMounts:
             - name: data
               mountPath: /app/data
@@ -42,13 +61,15 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
             timeoutSeconds: 5
+          # Analysis can exceed default probe windows; avoid killing long uploads.
           livenessProbe:
             httpGet:
               path: /
               port: http
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             periodSeconds: 30
             timeoutSeconds: 5
+            failureThreshold: 6
           resources:
             requests:
               memory: 512Mi

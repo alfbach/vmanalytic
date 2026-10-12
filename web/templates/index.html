@@ -126,7 +126,7 @@
         <form id="form-upload-import" method="post" enctype="multipart/form-data">
           <input type="hidden" name="import_mode" value="upload">
           <label for="rvtools_files">{{ t('label_rvtools_files') }}</label>
-          <input type="file" id="rvtools_files" name="rvtools_files" class="pf-v5-c-form-control" accept=".xlsx,.xls" multiple>
+          <input type="file" id="rvtools_files" name="rvtools_files" class="pf-v5-c-form-control" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" multiple>
           <p class="hint">{{ t('hint_rvtools_files') | safe }}</p>
           <button type="submit" class="pf-v5-c-button pf-m-primary">{{ t('btn_run_upload') }}</button>
         </form>

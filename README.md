@@ -206,6 +206,15 @@ oc -n vmanalytic logs -f deploy/vmanalytic
 
 Analysis can take several minutes; container Gunicorn timeout is **600s**.
 
+For large RVTools uploads, raise the Route / HAProxy timeout to match (e.g. 600s):
+
+```bash
+oc -n vmanalytic annotate route vmanalytic --overwrite \
+  haproxy.router.openshift.io/timeout=600s
+```
+
+The image is OpenShift-ready for arbitrary UIDs (`chgrp 0` + `chmod g=u` on writable paths). Upload sessions go under `/app/data` (`TMPDIR` / `MPLCONFIGDIR` point there).
+
 ---
 
 ## Environment variables
@@ -216,6 +225,8 @@ Analysis can take several minutes; container Gunicorn timeout is **600s**.
 | `HOST` / `PORT` | Listen address for local Waitress/Flask helpers |
 | `VMANALYTIC_ROOT` | Custom writable data root |
 | `OIC_STATIC_ROOT` | Directory with o-i-creator static files for `/oic/` |
+| `TMPDIR` | Temp dir for uploads (default in image: `/app/data/tmp`) |
+| `MPLCONFIGDIR` | Matplotlib cache (default: `/app/data/.mplconfig`) |
 
 ---
 
@@ -235,6 +246,7 @@ Dockerfile        Container image (Gunicorn)
 
 - Prefer a strong `FLASK_SECRET_KEY` and network access control; the UI has no built-in login.
 - Upload sessions are stored under `data/uploads/` (or the mounted volume in containers).
+- Only **`.xlsx`** is supported (legacy `.xls` is rejected). Sheets `vInfo`, `vHost`, `vDisk` are required (case is normalized).
 - Without `OIC_STATIC_ROOT` (or a valid mount), the OpenShift helper tab returns 404 for `/oic/`.
 
 ---

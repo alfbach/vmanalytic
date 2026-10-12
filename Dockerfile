@@ -8,11 +8,15 @@
 
 FROM python:3.12-slim-bookworm
 
+# OpenShift/Podman: arbitrary UID is typically in group 0; keep caches on /app/data.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PYTHONPATH=/app \
-    OIC_STATIC_ROOT=/app/oic-static
+    OIC_STATIC_ROOT=/app/oic-static \
+    TMPDIR=/app/data/tmp \
+    MPLCONFIGDIR=/app/data/.mplconfig \
+    HOME=/tmp
 
 WORKDIR /app
 
@@ -24,14 +28,14 @@ COPY web/ web/
 COPY vm_analysis/ vm_analysis/
 COPY helper_files/ helper_files/
 
-# Writable dirs (upload sessions, optional CSV cache)
-RUN mkdir -p data/uploads saved_csv_files oic-static \
-    && chmod -R u+rwX data saved_csv_files oic-static
+# Writable dirs (upload sessions, temp uploads, matplotlib cache, optional CSV cache).
+# Group 0 + g=u: OpenShift arbitrary UIDs (and rootless Podman) can write via root group.
+RUN mkdir -p data/uploads data/tmp data/.mplconfig saved_csv_files oic-static \
+    && useradd --create-home --uid 1000 --shell /bin/bash vmanalytic \
+    && chown -R 1000:0 /app \
+    && chmod -R g=u /app
 
-# Non-root runtime
-RUN useradd --create-home --uid 1000 --shell /bin/bash vmanalytic \
-    && chown -R vmanalytic:vmanalytic /app
-USER vmanalytic
+USER 1000
 
 EXPOSE 5000
 

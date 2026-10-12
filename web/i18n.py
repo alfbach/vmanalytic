@@ -19,14 +19,11 @@ LANG_LABEL = {
 
 
 def pick_locale(request) -> str:
+    """Prefer English for the UI; honor an explicit language-chip cookie only."""
     c = (request.cookies.get(COOKIE_NAME) or "").lower().strip()
     if c in LOCALES:
         return c
-    accept = request.headers.get("Accept-Language", "")
-    for part in accept.split(","):
-        tag = part.split(";")[0].strip().lower()[:2]
-        if tag in LOCALES:
-            return tag
+    # Do not auto-detect from Accept-Language (often de_* on local machines).
     return "en"
 
 
@@ -267,6 +264,7 @@ _EN: dict[str, str] = {
     "flash_upload_large": "Upload too large (maximum 256 MB per request).",
     "flash_no_file": "Please choose at least one .xlsx file.",
     "flash_skipped_not_excel": "Skipped (not Excel): {name}",
+    "flash_skipped_xls": "Skipped (legacy .xls not supported — save as .xlsx): {name}",
     "flash_no_valid": "No valid Excel files to process.",
     "flash_vc_required": "vCenter host and username are required.",
     "flash_unknown_mode": "Unknown import mode.",
@@ -405,6 +403,7 @@ _DE: dict[str, str] = {
     "flash_upload_large": "Upload zu groß (maximal 256 MB pro Anfrage).",
     "flash_no_file": "Bitte mindestens eine .xlsx-Datei wählen.",
     "flash_skipped_not_excel": "Übersprungen (kein Excel): {name}",
+    "flash_skipped_xls": "Übersprungen (altes .xls nicht unterstützt — als .xlsx speichern): {name}",
     "flash_no_valid": "Keine gültigen Excel-Dateien zur Verarbeitung.",
     "flash_vc_required": "vCenter-Host und Benutzername sind erforderlich.",
     "flash_unknown_mode": "Unbekannter Importmodus.",
@@ -543,6 +542,7 @@ _FR: dict[str, str] = {
     "flash_upload_large": "Téléversement trop volumineux (256 Mo max par requête).",
     "flash_no_file": "Veuillez choisir au moins un fichier .xlsx.",
     "flash_skipped_not_excel": "Ignoré (pas Excel) : {name}",
+    "flash_skipped_xls": "Ignoré (.xls ancien non pris en charge — enregistrer en .xlsx) : {name}",
     "flash_no_valid": "Aucun fichier Excel valide à traiter.",
     "flash_vc_required": "L’hôte vCenter et le nom d’utilisateur sont requis.",
     "flash_unknown_mode": "Mode d’import inconnu.",
@@ -681,6 +681,7 @@ _ES: dict[str, str] = {
     "flash_upload_large": "Subida demasiado grande (máximo 256 MB por solicitud).",
     "flash_no_file": "Elija al menos un archivo .xlsx.",
     "flash_skipped_not_excel": "Omitido (no es Excel): {name}",
+    "flash_skipped_xls": "Omitido (.xls antiguo no admitido — guardar como .xlsx): {name}",
     "flash_no_valid": "No hay archivos Excel válidos para procesar.",
     "flash_vc_required": "Se requieren host vCenter y nombre de usuario.",
     "flash_unknown_mode": "Modo de importación desconocido.",
